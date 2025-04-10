@@ -12,6 +12,7 @@ public class CarController : MonoBehaviour
     [SerializeField] private Transform[] rayPoints;
     [SerializeField] private LayerMask drivable;
     [SerializeField] private Transform accelerationPoint;
+    [SerializeField] private Transform gravityPoint;
     [SerializeField] private GameObject[] tires = new GameObject[4];
     [SerializeField] private GameObject[] frontTireParents = new GameObject[2];
 
@@ -110,13 +111,17 @@ public class CarController : MonoBehaviour
 
         if (Input.GetKeyDown(KeyCode.E) && !isGrounded)
         {
-            // ResetRotationInAir();
-            if (rotationResetRoutine != null)
-                StopCoroutine(rotationResetRoutine);
-
-            rotationResetRoutine = StartCoroutine(SmoothResetRotation(0.5f));
+            ResetRotationInAir();
         }
 
+    }
+
+    private void ResetRotationInAir()
+    {
+        if (rotationResetRoutine != null)
+            StopCoroutine(rotationResetRoutine);
+
+        rotationResetRoutine = StartCoroutine(SmoothResetRotation(1f));
     }
 
     private void Suspension()
@@ -145,7 +150,11 @@ public class CarController : MonoBehaviour
                 carRB.AddForceAtPosition(netForce * rayPoints[i].up , rayPoints[i].position);
 
                 //Tire Visuals
-                SetTirePosition(tires[i], hit.point + rayPoints[i].up * wheelRadius);
+                //old code from video
+                // SetTirePosition(tires[i], hit.point + rayPoints[i].up * wheelRadius);
+                float springLength = Mathf.Clamp(hit.distance - wheelRadius, restLength - springTravel, restLength);
+                Vector3 tirePos = rayPoints[i].position - rayPoints[i].up * springLength;
+                SetTirePosition(tires[i], tirePos);
 
                 Debug.DrawRay(rayPoints[i].position, -rayPoints[i].up * maxLength, Color.red);
             }
@@ -182,6 +191,7 @@ public class CarController : MonoBehaviour
         }
         else
         {
+            if(isGrounded) ResetRotationInAir();
             isGrounded = false;
         }
     }
@@ -235,11 +245,12 @@ public class CarController : MonoBehaviour
     private Coroutine handBrakeRoutine;
     public void HandBrake()
     {
+        if(isGrounded == false) return; // Only apply handbrake when grounded
         // Stop any existing handbrake coroutine to prevent stacking
         if (handBrakeRoutine != null)
             StopCoroutine(handBrakeRoutine);
 
-        handBrakeRoutine = StartCoroutine(SmoothStop(0.5f));
+        handBrakeRoutine = StartCoroutine(SmoothStop(1f));
     }
 
     private IEnumerator SmoothStop(float duration)
@@ -281,13 +292,13 @@ public class CarController : MonoBehaviour
 
     private void AirbornePhysics()
     {
-        carRB.AddForceAtPosition(acceleration * airFloat * -transform.up, accelerationPoint.position, ForceMode.Acceleration);
+        carRB.AddForceAtPosition(acceleration * airFloat * -transform.up, gravityPoint.position, ForceMode.Acceleration);
         if(!isBoosting)
         {
-            carRB.AddForceAtPosition(acceleration * airTravel * transform.forward, accelerationPoint.position, ForceMode.Acceleration);
+            carRB.AddForceAtPosition(acceleration * airTravel * transform.forward, gravityPoint.position, ForceMode.Acceleration);
         }
         else{
-            carRB.AddForceAtPosition(acceleration * (airTravel*2) * transform.forward, accelerationPoint.position, ForceMode.Acceleration);
+            carRB.AddForceAtPosition(acceleration * (airTravel*2) * transform.forward, gravityPoint.position, ForceMode.Acceleration);
         }
     }
 
@@ -314,12 +325,12 @@ public class CarController : MonoBehaviour
     private void Visuals()
     {
         TireVisuals();
-        if(isGrounded == false && DetectFalling() == false){ // need to check if is tricking
-            if (tiltDownRoutine != null)
-            StopCoroutine(tiltDownRoutine);
+        // if(DetectFalling()){ // need to check if is tricking
+        //     if (tiltDownRoutine != null)
+        //     StopCoroutine(tiltDownRoutine);
 
-            tiltDownRoutine = StartCoroutine(SmoothTiltDownward(1f, 20f));
-        }
+        //     tiltDownRoutine = StartCoroutine(SmoothTiltDownward(1f, 20f));
+        // }
     }
 
     private bool DetectFalling()
