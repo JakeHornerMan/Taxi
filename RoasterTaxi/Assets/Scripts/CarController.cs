@@ -172,6 +172,12 @@ public class CarController : MonoBehaviour
 
         if (tempGroundedWheels > 1)
         {
+            // if(!isGrounded){
+            //     if (rotationResetRoutine != null)
+            //     StopCoroutine(rotationResetRoutine);
+
+            //     rotationResetRoutine = StartCoroutine(SmoothResetRotation(0.5f));
+            // }
             isGrounded = true;
         }
         else
@@ -188,13 +194,13 @@ public class CarController : MonoBehaviour
 
     private void Movement()
     {
-        if (isBreaking)
-        {
-            HandBrake();
-            return;
-        }
 
         if(isGrounded){
+            if (isBreaking)
+            {
+                HandBrake();
+                return;
+            }
             Acceleration();
             Deceleration();
             Turn();
@@ -265,16 +271,24 @@ public class CarController : MonoBehaviour
     private void Boost()
     {
         currentSpeed = Vector3.Dot(carRB.velocity, transform.forward);
-        if (currentSpeed < maxBoostSpeed)
-        {
-            carRB.AddForceAtPosition(acceleration * boostMultiplier * transform.forward, accelerationPoint.position, ForceMode.Acceleration);
+        if (currentSpeed < maxBoostSpeed){
+            if(isGrounded)
+            {
+                carRB.AddForceAtPosition(acceleration * boostMultiplier * transform.forward, accelerationPoint.position, ForceMode.Acceleration);
+            }
         }
     }
 
     private void AirbornePhysics()
     {
         carRB.AddForceAtPosition(acceleration * airFloat * -transform.up, accelerationPoint.position, ForceMode.Acceleration);
-        carRB.AddForceAtPosition(acceleration * airTravel * transform.forward, accelerationPoint.position, ForceMode.Acceleration);
+        if(!isBoosting)
+        {
+            carRB.AddForceAtPosition(acceleration * airTravel * transform.forward, accelerationPoint.position, ForceMode.Acceleration);
+        }
+        else{
+            carRB.AddForceAtPosition(acceleration * (airTravel*2) * transform.forward, accelerationPoint.position, ForceMode.Acceleration);
+        }
     }
 
     private void Turn()
