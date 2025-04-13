@@ -9,10 +9,10 @@ public class CarController : MonoBehaviour
 
     [Header("References")]
     [SerializeField] private Rigidbody carRB;
+    [SerializeField] private CapsuleCollider carCollider; 
     [SerializeField] private Transform[] rayPoints;
     [SerializeField] private LayerMask drivable;
     [SerializeField] private Transform accelerationPoint;
-    [SerializeField] private Transform gravityPoint;
     [SerializeField] private GameObject[] tires = new GameObject[4];
     [SerializeField] private GameObject[] frontTireParents = new GameObject[2];
 
@@ -35,6 +35,7 @@ public class CarController : MonoBehaviour
     [SerializeField] private AnimationCurve turningCurve;
     [Tooltip("GRIP: Force applied reduce slide (increase this to make the car have more grip)")]
     [SerializeField] private float dragCoefficient = 1f;
+    [SerializeField] private float failedRayLength = 1.5f;
 
     [Header("Air-Bourne Settings")]
     [Tooltip("AIR-BOURNE FALL SPEED: Downwards force applied to the car when it is in the air (reduce this to make the car float more)")]
@@ -43,19 +44,21 @@ public class CarController : MonoBehaviour
     [SerializeField] private float airTravel = 0.2f;
 
     [Header("Boost Settings")]
-    public bool isBoosting = false;
+    [HideInInspector] public bool isBoosting = false;
     [SerializeField] private float boostMultiplier = 1.5f;
     [SerializeField] private float maxBoostSpeed = 300f;
 
     [Header("Handbreak Settings")]
-    public bool isBreaking = false;
+    [HideInInspector] public bool isBreaking = false;
     
 
     private Vector3 currentCarLocalVelocity = Vector3.zero;
     private float carVelocityRatio = 0f;
 
+    //ground Triggers
     private int[] wheelIsGrounded = new int[4];
-    private bool isGrounded = false;
+    [HideInInspector] public bool isGrounded = false;
+    [HideInInspector] public bool isFailedLanding = false;
 
     [Header("Visuals")]
     [SerializeField] private float tireRotSpeed = 3000f;
@@ -65,12 +68,15 @@ public class CarController : MonoBehaviour
     void Awake() 
     {
         carRB = GetComponent<Rigidbody>();
+        carCollider = GetComponent<CapsuleCollider>();
         if (carRB == null) Debug.LogError("Rigidbody not found on the car object.");
     }
 
     void FixedUpdate() {
+        Debug.DrawRay(transform.position, transform.up * failedRayLength, Color.blue);
         Suspension();
         GroundCheck();
+        if(!isGrounded && !isFailedLanding) FailedLandCheck();
         CalculateCarVelocity();
         Movement();
         Visuals();
@@ -109,11 +115,10 @@ public class CarController : MonoBehaviour
             Debug.Log("Hand Break released.");
         }
 
-        if (Input.GetKeyDown(KeyCode.E) && !isGrounded)
+        if (Input.GetKeyDown(KeyCode.Tab))
         {
-            ResetRotationInAir();
+            HardResetRotation();
         }
-
     }
 
     private void ResetRotationInAir()
@@ -179,19 +184,18 @@ public class CarController : MonoBehaviour
             tempGroundedWheels += wheelIsGrounded[i];
         }
 
-        if (tempGroundedWheels > 1)
+        if (tempGroundedWheels >= 3)
         {
-            // if(!isGrounded){
-            //     if (rotationResetRoutine != null)
-            //     StopCoroutine(rotationResetRoutine);
-
-            //     rotationResetRoutine = StartCoroutine(SmoothResetRotation(0.5f));
-            // }
+            if(!isGrounded){
+                carRB.drag = 1f;
+                carRB.angularDrag = 10f;
+            }
             isGrounded = true;
+            
         }
         else
         {
-            if(isGrounded) ResetRotationInAir();
+            // ResetRotationInAir();
             isGrounded = false;
         }
     }
@@ -292,14 +296,18 @@ public class CarController : MonoBehaviour
 
     private void AirbornePhysics()
     {
-        carRB.AddForceAtPosition(acceleration * airFloat * -transform.up, gravityPoint.position, ForceMode.Acceleration);
+        carRB.AddForce(acceleration * airFloat * Vector3.down, ForceMode.Acceleration);
         if(!isBoosting)
         {
-            carRB.AddForceAtPosition(acceleration * airTravel * transform.forward, gravityPoint.position, ForceMode.Acceleration);
+            carRB.AddForce(acceleration * airTravel * Vector3.forward, ForceMode.Acceleration);
         }
         else{
-            carRB.AddForceAtPosition(acceleration * (airTravel*2) * transform.forward, gravityPoint.position, ForceMode.Acceleration);
+            carRB.AddForce(acceleration * (airTravel*2) * Vector3.forward, ForceMode.Acceleration);
         }
+
+        // carRB.AddForce(Vector3.down * airFloat, ForceMode.Acceleration);
+        // carRB.drag = 0.5f;
+        // carRB.angularDrag = 0f;
     }
 
     private void Turn()
@@ -358,6 +366,13 @@ public class CarController : MonoBehaviour
         tire.transform.position = targetPosition;
     }
 
+    private void HardResetRotation()
+    {
+        Vector3 flatForward = Vector3.ProjectOnPlane(transform.forward, Vector3.up).normalized;
+        Quaternion targetRotation = Quaternion.LookRotation(flatForward, Vector3.up);
+        carRB.MoveRotation(targetRotation);
+    }
+
     private Coroutine rotationResetRoutine;
     private IEnumerator SmoothResetRotation(float duration)
     {
@@ -369,7 +384,7 @@ public class CarController : MonoBehaviour
 
         float time = 0f;
 
-        while (time < duration)
+        while (time < duration && isGrounded == false)
         {
             float t = time / duration;
             Quaternion newRotation = Quaternion.Slerp(startRotation, targetRotation, t);
@@ -385,27 +400,59 @@ public class CarController : MonoBehaviour
         rotationResetRoutine = null;
     }
 
-    private Coroutine tiltDownRoutine;
-    private IEnumerator SmoothTiltDownward(float duration, float tiltAngle)
+    private void FailedLandCheck()
     {
-        Quaternion startRotation = carRB.rotation;
-
-        // Calculate the downward-tilted rotation (pitch the car's nose down)
-        Quaternion tiltRotation = Quaternion.AngleAxis(tiltAngle, transform.right);
-        Quaternion targetRotation = startRotation * tiltRotation;
-
-        float time = 0f;
-        while (time < duration && isGrounded == false)
+        RaycastHit hit;
+        if (Physics.Raycast(transform.position, transform.up, out hit, failedRayLength, drivable))
         {
-            float t = time / duration;
-            Quaternion newRotation = Quaternion.Slerp(startRotation, targetRotation, t);
-            carRB.MoveRotation(newRotation);
+            Debug.Log("YOU FAILED THE LANDING!");
+            isFailedLanding = true;
+            ResetCar();
+        }
+        Debug.DrawRay(transform.position, transform.up * failedRayLength, Color.blue);
+    }
 
-            time += Time.deltaTime;
-            yield return null;
+    private void ResetCar(){
+        if (flashRoutine != null)
+            StopCoroutine(flashRoutine);
+
+        flashRoutine = StartCoroutine(FlashAndReset(this.gameObject));
+    }
+
+    private Coroutine flashRoutine;
+    private IEnumerator FlashAndReset(GameObject obj)
+    {
+        Renderer[] renderers = obj.GetComponentsInChildren<Renderer>();
+        
+        for(int i = 0; i < 5; i++)
+        {
+            // Make invisible
+            foreach (var rend in renderers)
+                rend.enabled = false;
+
+            yield return new WaitForSeconds(0.2f);
+
+            // Make visible
+            foreach (var rend in renderers)
+                rend.enabled = true;
+            
+            yield return new WaitForSeconds(0.2f);
         }
 
-        carRB.MoveRotation(targetRotation);
-        tiltDownRoutine = null;
-    }
+        // Make invisible
+        foreach (var rend in renderers)
+            rend.enabled = false;
+
+        HardResetRotation();
+
+        yield return new WaitForSeconds(0.2f);
+
+        // Make visible
+        foreach (var rend in renderers)
+            rend.enabled = true;
+
+        isFailedLanding = false;
+
+        yield return new WaitForSeconds(0.2f);
+}
 }
