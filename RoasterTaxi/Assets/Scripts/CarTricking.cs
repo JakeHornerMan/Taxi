@@ -91,22 +91,22 @@ public class CarTricking : MonoBehaviour
 
     private void LeftRotation()
     {
-        transform.localRotation *= Quaternion.Euler(0, 0, -rotationalForce * Time.deltaTime);
+        transform.localRotation *= Quaternion.Euler(0, 0, rotationalForce * Time.deltaTime);
     }
 
     private void RightRotation()
     {
-        transform.localRotation *= Quaternion.Euler(0, 0, rotationalForce * Time.deltaTime);
+        transform.localRotation *= Quaternion.Euler(0, 0, -rotationalForce * Time.deltaTime);
     }
 
     private void ForwardRotation()
     {
-        transform.localRotation *= Quaternion.Euler(rotationalForce * Time.deltaTime, 0 , 0);
+        transform.localRotation *= Quaternion.Euler(-rotationalForce * Time.deltaTime, 0 , 0);
     }
 
     private void BackRotation()
     {
-        transform.localRotation *= Quaternion.Euler(-rotationalForce * Time.deltaTime, 0 , 0);
+        transform.localRotation *= Quaternion.Euler(rotationalForce * Time.deltaTime, 0 , 0);
     }
 
 
