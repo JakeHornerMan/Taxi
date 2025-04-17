@@ -65,9 +65,23 @@ public class CarTricking : MonoBehaviour
 
     }
 
+    private bool CanTrick()
+    {
+        int tempGroundedWheels = 0;
+        for (int i = 0; i < carController.wheelIsGrounded.Length; i++)
+        {
+            tempGroundedWheels += carController.wheelIsGrounded[i];
+        }
+        if (tempGroundedWheels <= 0)
+        {
+            return true;
+        }
+        return false;
+    }
+
     private void HandleRotation()
     {
-        if(carController.isGrounded || carController.isFailedLanding) return;
+        if(!CanTrick() || carController.isFailedLanding) return;
         if(leftRotate && !rightRotate)
         {
             LeftRotation();

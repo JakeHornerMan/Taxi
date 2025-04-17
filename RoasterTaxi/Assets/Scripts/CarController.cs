@@ -1,20 +1,28 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Cinemachine;
 
 public class CarController : MonoBehaviour
 {
     [Header("Vehicle Stats")]
     public float currentSpeed;
+    private Vector3 currentCarLocalVelocity = Vector3.zero;
+    [HideInInspector] public float carVelocityRatio = 0f;
 
     [Header("References")]
     [SerializeField] private Rigidbody carRB;
     [SerializeField] private CapsuleCollider carCollider; 
+    [SerializeField] private CinemachineVirtualCamera vcam; 
+    [HideInInspector] private CinemachineTransposer transposer;
+    [HideInInspector] private CarSounds carSounds;
     [SerializeField] private Transform[] rayPoints;
     [SerializeField] private LayerMask drivable;
     [SerializeField] private Transform accelerationPoint;
     [SerializeField] private GameObject[] tires = new GameObject[4];
     [SerializeField] private GameObject[] frontTireParents = new GameObject[2];
+    [SerializeField] private TrailRenderer[] skidMarks = new TrailRenderer[2];
+    [SerializeField] private ParticleSystem[] skidSmokes = new ParticleSystem[2];
 
     [Header("Suspension Settings")]
     [SerializeField] private float springStiffness;
@@ -52,23 +60,24 @@ public class CarController : MonoBehaviour
     [HideInInspector] public bool isBreaking = false;
     
 
-    private Vector3 currentCarLocalVelocity = Vector3.zero;
-    private float carVelocityRatio = 0f;
-
     //ground Triggers
-    private int[] wheelIsGrounded = new int[4];
+    [HideInInspector] public int[] wheelIsGrounded = new int[4];
     [HideInInspector] public bool isGrounded = false;
     [HideInInspector] public bool isFailedLanding = false;
 
     [Header("Visuals")]
     [SerializeField] private float tireRotSpeed = 3000f;
     [SerializeField] private float maxSteeringAngle = 30f;
+    [SerializeField] private float minSideSkidVelocity = 10f;
+    
 
     
     void Awake() 
     {
         carRB = GetComponent<Rigidbody>();
         carCollider = GetComponent<CapsuleCollider>();
+        carSounds = GetComponent<CarSounds>();
+        transposer = vcam.GetCinemachineComponent<CinemachineTransposer>();
         if (carRB == null) Debug.LogError("Rigidbody not found on the car object.");
     }
 
@@ -80,6 +89,7 @@ public class CarController : MonoBehaviour
         CalculateCarVelocity();
         Movement();
         Visuals();
+        carSounds.EngineSound(carVelocityRatio);
     }
 
      void Update() {
@@ -93,12 +103,15 @@ public class CarController : MonoBehaviour
 
         if (Input.GetKeyDown(KeyCode.LeftShift))
         {
-            Debug.Log(" Boosting! ");
+            Debug.Log(" Boosting! "); 
+            // CameraChangeFollowBoost();
             isBoosting = true;
+            carSounds.PlayBoostSound();
         }
         if (Input.GetKeyUp(KeyCode.LeftShift))
         {
             Debug.Log(" Not Boosting! ");
+            // CameraChangeFollowOffsetReturn();
             isBoosting = false;
         }
 
@@ -107,6 +120,7 @@ public class CarController : MonoBehaviour
             isBoosting = false;
             isBreaking = true;
             Debug.Log("Hand Break!");
+            carSounds.PlayHandbrakeSound();
 
         }
         if (Input.GetKeyUp(KeyCode.Space))
@@ -118,7 +132,10 @@ public class CarController : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.Tab))
         {
             HardResetRotation();
+            carSounds.PlayCarHorn();
         }
+
+        
     }
 
     private void ResetRotationInAir()
@@ -184,7 +201,8 @@ public class CarController : MonoBehaviour
             tempGroundedWheels += wheelIsGrounded[i];
         }
 
-        if (tempGroundedWheels >= 3)
+        //I had this set to 3 for a while it fixed the car from flipping over but it was not realistic.
+        if (tempGroundedWheels >= 2)
         {
             if(!isGrounded){
                 carRB.drag = 1f;
@@ -264,7 +282,7 @@ public class CarController : MonoBehaviour
 
         float time = 0f;
 
-        while (time < duration)
+        while (time < duration && isBreaking)
         {
             float t = time / duration;
 
@@ -292,6 +310,40 @@ public class CarController : MonoBehaviour
                 carRB.AddForceAtPosition(acceleration * boostMultiplier * transform.forward, accelerationPoint.position, ForceMode.Acceleration);
             }
         }
+    }
+
+    public void CameraChangeFollowBoost()
+    {
+        if (offsetRoutine != null)
+            StopCoroutine(offsetRoutine);
+
+        offsetRoutine = StartCoroutine(LerpFollowOffset(new Vector3(0f, 2.5f, -15f), 5f));
+    }
+
+    public void CameraChangeFollowOffsetReturn()
+    {
+        if (offsetRoutine != null)
+            StopCoroutine(offsetRoutine);
+
+        offsetRoutine = StartCoroutine(LerpFollowOffset(new Vector3(0f, 2.5f, -10f), 2f));
+    }
+
+    private Coroutine offsetRoutine;
+    private IEnumerator LerpFollowOffset(Vector3 targetOffset, float duration)
+    {
+        Vector3 startOffset = transposer.m_FollowOffset;
+
+        float time = 0f;
+        while (time < duration && isBoosting)
+        {
+            float t = time / duration;
+            transposer.m_FollowOffset = Vector3.Lerp(startOffset, targetOffset, t);
+            time += Time.deltaTime;
+            yield return null;
+        }
+
+        transposer.m_FollowOffset = targetOffset;
+        offsetRoutine = null;
     }
 
     private void AirbornePhysics()
@@ -333,17 +385,7 @@ public class CarController : MonoBehaviour
     private void Visuals()
     {
         TireVisuals();
-        // if(DetectFalling()){ // need to check if is tricking
-        //     if (tiltDownRoutine != null)
-        //     StopCoroutine(tiltDownRoutine);
-
-        //     tiltDownRoutine = StartCoroutine(SmoothTiltDownward(1f, 20f));
-        // }
-    }
-
-    private bool DetectFalling()
-    {
-        return !isGrounded && carRB.velocity.y < -0.1f;
+        TireVfx();
     }
 
     private void TireVisuals()
@@ -364,6 +406,37 @@ public class CarController : MonoBehaviour
     private void SetTirePosition(GameObject tire, Vector3 targetPosition)
     {
         tire.transform.position = targetPosition;
+    }
+
+    private void TireVfx()
+    {
+        if(isGrounded && currentCarLocalVelocity.x > minSideSkidVelocity || isGrounded && currentCarLocalVelocity.x < -minSideSkidVelocity){
+            ToggleSkidMarks(true);
+            ToggleSkidSmokes(true);
+            carSounds.ToggleSkidSound(true);
+        }
+        else{
+            ToggleSkidMarks(false);
+            ToggleSkidSmokes(false);
+            carSounds.ToggleSkidSound(true);
+        }
+    }
+
+    private void ToggleSkidMarks(bool toggle){
+        foreach(var skidMark in skidMarks){
+            skidMark.emitting = toggle;
+        }
+    }
+
+    private void ToggleSkidSmokes(bool toggle){
+        foreach(var smoke in skidSmokes){
+            if(toggle){
+                smoke.Play();
+            }
+            else{
+                smoke.Stop();
+            }
+        }
     }
 
     private void HardResetRotation()
