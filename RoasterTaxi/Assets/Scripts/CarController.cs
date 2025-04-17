@@ -261,7 +261,16 @@ public class CarController : MonoBehaviour
 
     private void Deceleration()
     {
-        carRB.AddForceAtPosition(deceleration * moveInput * -transform.forward, accelerationPoint.position, ForceMode.Acceleration);
+        carRB.AddForceAtPosition(deceleration * Mathf.Abs(carVelocityRatio) * -transform.forward, accelerationPoint.position, ForceMode.Acceleration);
+    }
+
+    private void Turn()
+    {
+        carRB.AddRelativeTorque(steerStrength * steerInput * 
+            turningCurve.Evaluate(Mathf.Abs(carVelocityRatio)) * 
+            Mathf.Sign(carVelocityRatio) * carRB.transform.up, 
+            ForceMode.Acceleration
+        );
     }
 
     private Coroutine handBrakeRoutine;
@@ -362,15 +371,6 @@ public class CarController : MonoBehaviour
         // carRB.angularDrag = 0f;
     }
 
-    private void Turn()
-    {
-        carRB.AddRelativeTorque(steerStrength * steerInput * 
-            turningCurve.Evaluate(Mathf.Abs(carVelocityRatio)) * 
-            Mathf.Sign(carVelocityRatio) * carRB.transform.up, 
-            ForceMode.Acceleration
-        );
-    }
-
     private void SidewaysDrag()
     {
         float currentSidewaysSpeed = currentCarLocalVelocity.x;
@@ -418,7 +418,7 @@ public class CarController : MonoBehaviour
         else{
             ToggleSkidMarks(false);
             ToggleSkidSmokes(false);
-            carSounds.ToggleSkidSound(true);
+            carSounds.ToggleSkidSound(false);
         }
     }
 
