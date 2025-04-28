@@ -5552,7 +5552,7 @@ PrefabInstance:
     - target: {fileID: 6437634825176972341, guid: a3ddc7ff80e72224488167baef2f9cb4,
         type: 3}
       propertyPath: m_IsActive
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 9161623292840133274, guid: a3ddc7ff80e72224488167baef2f9cb4,
         type: 3}
@@ -5835,7 +5835,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!114 &832575518
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -11743,6 +11743,9 @@ MonoBehaviour:
   carRB: {fileID: 0}
   carCollider: {fileID: 0}
   vcam: {fileID: 1809501366126615113}
+  carVisuals:
+  - {fileID: 4950393728320500924}
+  - {fileID: 8958180270344170006}
   rayPoints:
   - {fileID: 1061121506676686192}
   - {fileID: 1924638010312917625}
@@ -11819,12 +11822,13 @@ MonoBehaviour:
     m_RotationOrder: 4
   dragCoefficient: 3
   failedRayLength: 0.75
-  airFloat: 2
-  airTravel: 0.2
+  airFloat: 1.2
+  airTravel: 0.5
   isBoosting: 0
   boostMultiplier: 1.5
   maxBoostSpeed: 1000
   isBreaking: 0
+  isDrifting: 0
   wheelIsGrounded: 00000000000000000000000000000000
   isGrounded: 0
   isFailedLanding: 0
@@ -12875,7 +12879,7 @@ Transform:
   m_GameObject: {fileID: 6641985969099205323}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: -0.2, z: -1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []

@@ -14,6 +14,7 @@ public class CarController : MonoBehaviour
     [SerializeField] private Rigidbody carRB;
     [SerializeField] private CapsuleCollider carCollider; 
     [SerializeField] private CinemachineVirtualCamera vcam; 
+    [SerializeField] private GameObject[] carVisuals = new GameObject[2]; 
     [HideInInspector] private CinemachineTransposer transposer;
     [HideInInspector] private CarSounds carSounds;
     [SerializeField] private Transform[] rayPoints;
@@ -58,6 +59,7 @@ public class CarController : MonoBehaviour
 
     [Header("Handbreak Settings")]
     [HideInInspector] public bool isBreaking = false;
+    [HideInInspector] public bool isDrifting = false;
     
 
     //ground Triggers
@@ -133,6 +135,19 @@ public class CarController : MonoBehaviour
         {
             HardResetRotation();
             carSounds.PlayCarHorn();
+        }
+
+        if (Input.GetKeyDown(KeyCode.V))
+        {
+            carSounds.PlayCarHorn();
+            DriftRotation();
+            isDrifting = true;
+        }
+        if (Input.GetKeyUp(KeyCode.V ))
+        {
+            carSounds.PlayCarHorn();
+            ResetDriftRotation();
+            isDrifting = false;
         }
 
         
@@ -227,7 +242,7 @@ public class CarController : MonoBehaviour
     private void Movement()
     {
 
-        if(isGrounded){
+        if (isGrounded){
             if (isBreaking)
             {
                 HandBrake();
@@ -238,9 +253,9 @@ public class CarController : MonoBehaviour
             Turn();
             SidewaysDrag();
         }
-        else
-        {
+        else{
             AirbornePhysics();
+        // AirbornePhysics2();
         }
 
         if (isBoosting)
@@ -357,6 +372,7 @@ public class CarController : MonoBehaviour
 
     private void AirbornePhysics()
     {
+        if(isGrounded) return; // Only apply airborne physics when not grounded
         carRB.AddForce(acceleration * airFloat * Vector3.down, ForceMode.Acceleration);
         if(!isBoosting)
         {
@@ -365,10 +381,6 @@ public class CarController : MonoBehaviour
         else{
             carRB.AddForce(acceleration * (airTravel*2) * Vector3.forward, ForceMode.Acceleration);
         }
-
-        // carRB.AddForce(Vector3.down * airFloat, ForceMode.Acceleration);
-        // carRB.drag = 0.5f;
-        // carRB.angularDrag = 0f;
     }
 
     private void SidewaysDrag()
@@ -380,6 +392,22 @@ public class CarController : MonoBehaviour
         Vector3 dragForce = transform.right * dragMagnitude;
 
         carRB.AddForceAtPosition(dragForce, carRB.worldCenterOfMass, ForceMode.Acceleration);
+    }
+
+    private void DriftRotation()
+    {
+        foreach(var obj in carVisuals)
+        {
+            obj.transform.Rotate(0f, -50.0f, 0f, Space.Self);
+        }
+    }
+
+    private void ResetDriftRotation()
+    {
+        foreach(var obj in carVisuals)
+        {
+            obj.transform.Rotate(0f, 50f, 0f, Space.Self);
+        }
     }
 
     private void Visuals()
@@ -527,5 +555,5 @@ public class CarController : MonoBehaviour
         isFailedLanding = false;
 
         yield return new WaitForSeconds(0.2f);
-}
+    }
 }
