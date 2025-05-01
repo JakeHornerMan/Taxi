@@ -376,10 +376,10 @@ public class CarController : MonoBehaviour
         carRB.AddForce(acceleration * airFloat * Vector3.down, ForceMode.Acceleration);
         if(!isBoosting)
         {
-            carRB.AddForce(acceleration * airTravel * Vector3.forward, ForceMode.Acceleration);
+            carRB.AddForce(acceleration * airTravel * transform.forward, ForceMode.Acceleration);
         }
         else{
-            carRB.AddForce(acceleration * (airTravel*2) * Vector3.forward, ForceMode.Acceleration);
+            carRB.AddForce(acceleration * (airTravel*2) * transform.forward, ForceMode.Acceleration);
         }
     }
 
