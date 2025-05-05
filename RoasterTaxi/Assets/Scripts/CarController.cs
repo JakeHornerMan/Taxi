@@ -17,6 +17,7 @@ public class CarController : MonoBehaviour
     [SerializeField] private GameObject[] carVisuals = new GameObject[2]; 
     [HideInInspector] private CinemachineTransposer transposer;
     [HideInInspector] private CarSounds carSounds;
+    [HideInInspector] private PlayerControls playerControls;
     [SerializeField] private Transform[] rayPoints;
     [SerializeField] private LayerMask drivable;
     [SerializeField] private Transform accelerationPoint;
@@ -94,13 +95,21 @@ public class CarController : MonoBehaviour
         carSounds.EngineSound(carVelocityRatio);
     }
 
-     void Update() {
+    void Update() {
         GetPlayerInput();
     }
 
     private void GetPlayerInput()
     {
         moveInput = Input.GetAxis("Vertical");
+        // if (Input.GetKeyDown(KeyCode.Space))
+        // {
+        //     moveInput = 1f;
+        // }
+        //  if (Input.GetKeyUp(KeyCode.Space))
+        // {
+        //     moveInput = 0f;
+        // }
         steerInput = Input.GetAxis("Horizontal");
 
         if (Input.GetKeyDown(KeyCode.LeftShift))
@@ -117,7 +126,7 @@ public class CarController : MonoBehaviour
             isBoosting = false;
         }
 
-        if (Input.GetKeyDown(KeyCode.Space))
+        if (Input.GetKeyDown(KeyCode.LeftControl))
         {
             isBoosting = false;
             isBreaking = true;
@@ -125,7 +134,7 @@ public class CarController : MonoBehaviour
             carSounds.PlayHandbrakeSound();
 
         }
-        if (Input.GetKeyUp(KeyCode.Space))
+        if (Input.GetKeyUp(KeyCode.LeftControl))
         {
             isBreaking = false;
             Debug.Log("Hand Break released.");
@@ -255,7 +264,6 @@ public class CarController : MonoBehaviour
         }
         else{
             AirbornePhysics();
-        // AirbornePhysics2();
         }
 
         if (isBoosting)
