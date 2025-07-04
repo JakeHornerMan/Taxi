@@ -382,12 +382,15 @@ public class CarController : MonoBehaviour
     {
         if(isGrounded) return; // Only apply airborne physics when not grounded
         carRB.AddForce(acceleration * airFloat * Vector3.down, ForceMode.Acceleration);
+        Vector3 flatForward = transform.forward;
+        flatForward.y = 0f;
+        flatForward.Normalize();
         if(!isBoosting)
         {
-            carRB.AddForce(acceleration * airTravel * transform.forward, ForceMode.Acceleration);
+            carRB.AddForce(acceleration * airTravel * flatForward, ForceMode.Acceleration);
         }
         else{
-            carRB.AddForce(acceleration * (airTravel*2) * transform.forward, ForceMode.Acceleration);
+            carRB.AddForce(acceleration * (airTravel*2) * flatForward, ForceMode.Acceleration);
         }
     }
 
