@@ -99,34 +99,33 @@ public class CarController : MonoBehaviour
         GetPlayerInput();
     }
 
-    private void GetPlayerInput()
-    {
-        moveInput = Input.GetAxis("Vertical");
-        // if (Input.GetKeyDown(KeyCode.Space))
-        // {
-        //     moveInput = 1f;
-        // }
-        //  if (Input.GetKeyUp(KeyCode.Space))
-        // {
-        //     moveInput = 0f;
-        // }
-        steerInput = Input.GetAxis("Horizontal");
+#region Controller Input
+    public void IsAccelerating(float ans){
+        moveInput = ans;
+    }
 
-        if (Input.GetKeyDown(KeyCode.LeftShift))
+    public void IsSteering(float ans){
+        steerInput = ans;
+    }
+
+    public void IsBoosting(bool ans){
+        if (ans)
         {
             Debug.Log(" Boosting! "); 
             // CameraChangeFollowBoost();
             isBoosting = true;
             carSounds.PlayBoostSound();
         }
-        if (Input.GetKeyUp(KeyCode.LeftShift))
+        else
         {
             Debug.Log(" Not Boosting! ");
             // CameraChangeFollowOffsetReturn();
             isBoosting = false;
         }
+    }
 
-        if (Input.GetKeyDown(KeyCode.LeftControl))
+    public void IsHandbreaking(bool ans){
+        if (ans)
         {
             isBoosting = false;
             isBreaking = true;
@@ -134,17 +133,20 @@ public class CarController : MonoBehaviour
             carSounds.PlayHandbrakeSound();
 
         }
-        if (Input.GetKeyUp(KeyCode.LeftControl))
+        else
         {
             isBreaking = false;
             Debug.Log("Hand Break released.");
         }
+    }
 
-        if (Input.GetKeyDown(KeyCode.Tab))
-        {
-            HardResetRotation();
-            carSounds.PlayCarHorn();
-        }
+    public void IsHardReseting(){
+        HardResetRotation();
+        carSounds.PlayCarHorn();
+    }
+
+    private void GetPlayerInput()
+    {
 
         if (Input.GetKeyDown(KeyCode.V))
         {
@@ -158,9 +160,9 @@ public class CarController : MonoBehaviour
             ResetDriftRotation();
             isDrifting = false;
         }
-
         
     }
+#endregion
 
     private void ResetRotationInAir()
     {
@@ -304,7 +306,7 @@ public class CarController : MonoBehaviour
         if (handBrakeRoutine != null)
             StopCoroutine(handBrakeRoutine);
 
-        handBrakeRoutine = StartCoroutine(SmoothStop(1f));
+        handBrakeRoutine = StartCoroutine(SmoothStop(0.5f));
     }
 
     private IEnumerator SmoothStop(float duration)
