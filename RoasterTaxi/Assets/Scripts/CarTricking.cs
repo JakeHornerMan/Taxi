@@ -8,61 +8,12 @@ public class CarTricking : MonoBehaviour
     [SerializeField] private CarController carController;
 
     [Header("Rotations Setting")]
+    [Tooltip("The force applied to the rotation when performing tricks.")]
     public float rotationalForce;
-    private bool leftRotate = false;
-    private bool rightRotate = false;
-    private bool forwardRotate = false;
-    private bool backRotate = false;
 
     void Awake() 
     {
         carController = GetComponent<CarController>();
-    }
-
-    void Update()
-    {
-        GetPlayerInput();
-        HandleRotation();
-    }
-
-    private void GetPlayerInput()
-    { 
-        if (Input.GetKeyDown(KeyCode.Q))
-        {
-            leftRotate = true;
-        }
-        if (Input.GetKeyUp(KeyCode.Q))
-        {
-            leftRotate = false;
-        }
-
-        if (Input.GetKeyDown(KeyCode.E))
-        {
-            rightRotate = true;
-        }
-        if (Input.GetKeyUp(KeyCode.E))
-        {
-            rightRotate = false;
-        }
-
-        if (Input.GetKeyDown(KeyCode.R))
-        {
-            forwardRotate = true;
-        }
-        if (Input.GetKeyUp(KeyCode.R))
-        {
-            forwardRotate = false;
-        }
-
-        if (Input.GetKeyDown(KeyCode.F))
-        {
-            forwardRotate = true;
-        }
-        if (Input.GetKeyUp(KeyCode.F))
-        {
-            forwardRotate = false;
-        }
-
     }
 
     private bool CanTrick()
@@ -79,48 +30,16 @@ public class CarTricking : MonoBehaviour
         return false;
     }
 
-    private void HandleRotation()
+    public void FlipRotation(float input)
     {
         if(!CanTrick() || carController.isFailedLanding) return;
-        if(leftRotate && !rightRotate)
-        {
-            LeftRotation();
-        }
-        
-        if(rightRotate && !leftRotate)
-        {
-            RightRotation();
-        }
-
-        if(forwardRotate && !backRotate)
-        {
-            ForwardRotation();
-        }
-
-        if(backRotate && !forwardRotate)
-        {
-            BackRotation();
-        }
+        transform.localRotation *= Quaternion.Euler((input * rotationalForce) * Time.deltaTime, 0 , 0);
     }
 
-    private void LeftRotation()
+    public void TwistRotation(float input)
     {
-        transform.localRotation *= Quaternion.Euler(0, 0, rotationalForce * Time.deltaTime);
-    }
-
-    private void RightRotation()
-    {
-        transform.localRotation *= Quaternion.Euler(0, 0, -rotationalForce * Time.deltaTime);
-    }
-
-    private void ForwardRotation()
-    {
-        transform.localRotation *= Quaternion.Euler(-rotationalForce * Time.deltaTime, 0 , 0);
-    }
-
-    private void BackRotation()
-    {
-        transform.localRotation *= Quaternion.Euler(rotationalForce * Time.deltaTime, 0 , 0);
+        if(!CanTrick() || carController.isFailedLanding) return;
+        transform.localRotation *= Quaternion.Euler(0, 0, (-input * rotationalForce) * Time.deltaTime);
     }
 
 

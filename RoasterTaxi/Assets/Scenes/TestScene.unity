@@ -40104,6 +40104,34 @@ MonoBehaviour:
         m_CallState: 2
     m_ActionId: 7a57967c-16b5-46ae-b206-1947024150cd
     m_ActionName: BaseDriving/Boost[/Keyboard/shift,/XInputControllerWindows/leftShoulder]
+  - m_PersistentCalls:
+      m_Calls: []
+    m_ActionId: 3eed9f86-e9dd-4e37-ac59-4d6f7e8b0642
+    m_ActionName: BaseDriving/Handbreak[/Keyboard/ctrl,/XInputControllerWindows/leftShoulder]
+  - m_PersistentCalls:
+      m_Calls: []
+    m_ActionId: 8f1614e8-9bcc-4d1b-929c-49b4ddcc5ce6
+    m_ActionName: BaseDriving/Accelerate[/XInputControllerWindows/rightTrigger,/Keyboard/w]
+  - m_PersistentCalls:
+      m_Calls: []
+    m_ActionId: 076a5c27-3956-4106-b59c-0466b8722722
+    m_ActionName: BaseDriving/Decelerate[/XInputControllerWindows/leftTrigger,/Keyboard/s]
+  - m_PersistentCalls:
+      m_Calls: []
+    m_ActionId: 3e606170-5cec-4a16-8ccb-53971b7bd3e2
+    m_ActionName: BaseDriving/Steer[/XInputControllerWindows/leftStick/x,/Keyboard/a,/Keyboard/d]
+  - m_PersistentCalls:
+      m_Calls: []
+    m_ActionId: 0fd2ad38-d4e1-4758-bdd3-9d3988c9f41e
+    m_ActionName: BaseDriving/ResetRotation[/XInputControllerWindows/dpad/down,/Keyboard/alt]
+  - m_PersistentCalls:
+      m_Calls: []
+    m_ActionId: 9267ae80-8b2f-4b04-bf98-b38cb8953b19
+    m_ActionName: BaseDriving/Tricking[/XInputControllerWindows/rightStick]
+  - m_PersistentCalls:
+      m_Calls: []
+    m_ActionId: 3ec01bf8-2b0f-4c6e-8b3d-1f645b5e6206
+    m_ActionName: BaseDriving/TwistRoation[/Keyboard/leftArrow,/Keyboard/rightArrow]
   m_NeverAutoSwitchControlSchemes: 0
   m_DefaultControlScheme: 
   m_DefaultActionMap: BaseDriving

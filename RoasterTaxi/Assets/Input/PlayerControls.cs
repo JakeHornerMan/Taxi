@@ -80,6 +80,33 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""Tricking"",
+                    ""type"": ""Value"",
+                    ""id"": ""9267ae80-8b2f-4b04-bf98-b38cb8953b19"",
+                    ""expectedControlType"": ""Vector2"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": true
+                },
+                {
+                    ""name"": ""TwistRotation"",
+                    ""type"": ""Value"",
+                    ""id"": ""3ec01bf8-2b0f-4c6e-8b3d-1f645b5e6206"",
+                    ""expectedControlType"": ""Axis"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": true
+                },
+                {
+                    ""name"": ""FlipRotation"",
+                    ""type"": ""Value"",
+                    ""id"": ""9fdb2f10-cb2b-49d0-9e74-fbb8cb254914"",
+                    ""expectedControlType"": ""Axis"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": true
                 }
             ],
             ""bindings"": [
@@ -236,6 +263,83 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
                     ""action"": ""ResetRotation"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""73594db1-d5be-4986-a20a-d1df5c5b02a9"",
+                    ""path"": ""<Gamepad>/rightStick"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Tricking"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": ""1D Axis"",
+                    ""id"": ""05f729ec-206d-4462-a5cc-f978df2d1d1d"",
+                    ""path"": ""1DAxis"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""TwistRotation"",
+                    ""isComposite"": true,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": ""negative"",
+                    ""id"": ""31088c9f-4b13-4139-98a1-8c264e93bfae"",
+                    ""path"": ""<Keyboard>/leftArrow"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""TwistRotation"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": true
+                },
+                {
+                    ""name"": ""positive"",
+                    ""id"": ""54cda3ee-01d6-462b-8ccf-7a61ad36a37b"",
+                    ""path"": ""<Keyboard>/rightArrow"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""TwistRotation"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": true
+                },
+                {
+                    ""name"": ""1D Axis"",
+                    ""id"": ""3aa4e43d-51f5-4597-85ef-53cf43d3aa65"",
+                    ""path"": ""1DAxis"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""FlipRotation"",
+                    ""isComposite"": true,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": ""negative"",
+                    ""id"": ""2b18498c-71e4-4c97-9bfd-9c68f17772be"",
+                    ""path"": ""<Keyboard>/downArrow"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""FlipRotation"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": true
+                },
+                {
+                    ""name"": ""positive"",
+                    ""id"": ""1263bbe1-7467-4227-969f-a42cc23d029c"",
+                    ""path"": ""<Keyboard>/upArrow"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""FlipRotation"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": true
                 }
             ]
         }
@@ -250,6 +354,9 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
         m_BaseDriving_Decelerate = m_BaseDriving.FindAction("Decelerate", throwIfNotFound: true);
         m_BaseDriving_Steer = m_BaseDriving.FindAction("Steer", throwIfNotFound: true);
         m_BaseDriving_ResetRotation = m_BaseDriving.FindAction("ResetRotation", throwIfNotFound: true);
+        m_BaseDriving_Tricking = m_BaseDriving.FindAction("Tricking", throwIfNotFound: true);
+        m_BaseDriving_TwistRotation = m_BaseDriving.FindAction("TwistRotation", throwIfNotFound: true);
+        m_BaseDriving_FlipRotation = m_BaseDriving.FindAction("FlipRotation", throwIfNotFound: true);
     }
 
     public void Dispose()
@@ -317,6 +424,9 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
     private readonly InputAction m_BaseDriving_Decelerate;
     private readonly InputAction m_BaseDriving_Steer;
     private readonly InputAction m_BaseDriving_ResetRotation;
+    private readonly InputAction m_BaseDriving_Tricking;
+    private readonly InputAction m_BaseDriving_TwistRotation;
+    private readonly InputAction m_BaseDriving_FlipRotation;
     public struct BaseDrivingActions
     {
         private @PlayerControls m_Wrapper;
@@ -327,6 +437,9 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
         public InputAction @Decelerate => m_Wrapper.m_BaseDriving_Decelerate;
         public InputAction @Steer => m_Wrapper.m_BaseDriving_Steer;
         public InputAction @ResetRotation => m_Wrapper.m_BaseDriving_ResetRotation;
+        public InputAction @Tricking => m_Wrapper.m_BaseDriving_Tricking;
+        public InputAction @TwistRotation => m_Wrapper.m_BaseDriving_TwistRotation;
+        public InputAction @FlipRotation => m_Wrapper.m_BaseDriving_FlipRotation;
         public InputActionMap Get() { return m_Wrapper.m_BaseDriving; }
         public void Enable() { Get().Enable(); }
         public void Disable() { Get().Disable(); }
@@ -354,6 +467,15 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
             @ResetRotation.started += instance.OnResetRotation;
             @ResetRotation.performed += instance.OnResetRotation;
             @ResetRotation.canceled += instance.OnResetRotation;
+            @Tricking.started += instance.OnTricking;
+            @Tricking.performed += instance.OnTricking;
+            @Tricking.canceled += instance.OnTricking;
+            @TwistRotation.started += instance.OnTwistRotation;
+            @TwistRotation.performed += instance.OnTwistRotation;
+            @TwistRotation.canceled += instance.OnTwistRotation;
+            @FlipRotation.started += instance.OnFlipRotation;
+            @FlipRotation.performed += instance.OnFlipRotation;
+            @FlipRotation.canceled += instance.OnFlipRotation;
         }
 
         private void UnregisterCallbacks(IBaseDrivingActions instance)
@@ -376,6 +498,15 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
             @ResetRotation.started -= instance.OnResetRotation;
             @ResetRotation.performed -= instance.OnResetRotation;
             @ResetRotation.canceled -= instance.OnResetRotation;
+            @Tricking.started -= instance.OnTricking;
+            @Tricking.performed -= instance.OnTricking;
+            @Tricking.canceled -= instance.OnTricking;
+            @TwistRotation.started -= instance.OnTwistRotation;
+            @TwistRotation.performed -= instance.OnTwistRotation;
+            @TwistRotation.canceled -= instance.OnTwistRotation;
+            @FlipRotation.started -= instance.OnFlipRotation;
+            @FlipRotation.performed -= instance.OnFlipRotation;
+            @FlipRotation.canceled -= instance.OnFlipRotation;
         }
 
         public void RemoveCallbacks(IBaseDrivingActions instance)
@@ -401,5 +532,8 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
         void OnDecelerate(InputAction.CallbackContext context);
         void OnSteer(InputAction.CallbackContext context);
         void OnResetRotation(InputAction.CallbackContext context);
+        void OnTricking(InputAction.CallbackContext context);
+        void OnTwistRotation(InputAction.CallbackContext context);
+        void OnFlipRotation(InputAction.CallbackContext context);
     }
 }
