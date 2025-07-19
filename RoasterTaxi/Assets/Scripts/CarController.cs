@@ -12,9 +12,9 @@ public class CarController : MonoBehaviour
 
     [Header("References")]
     [SerializeField] private Rigidbody carRB;
-    [SerializeField] private CapsuleCollider carCollider; 
-    [SerializeField] private CinemachineVirtualCamera vcam; 
-    [SerializeField] private GameObject[] carVisuals = new GameObject[2]; 
+    [SerializeField] private CapsuleCollider carCollider;
+    [SerializeField] private CinemachineVirtualCamera vcam;
+    [SerializeField] private GameObject[] carVisuals = new GameObject[2];
     [HideInInspector] private CinemachineTransposer transposer;
     [HideInInspector] private CarSounds carSounds;
     [HideInInspector] private PlayerControls playerControls;
@@ -23,8 +23,9 @@ public class CarController : MonoBehaviour
     [SerializeField] private Transform accelerationPoint;
     [SerializeField] private GameObject[] tires = new GameObject[4];
     [SerializeField] private GameObject[] frontTireParents = new GameObject[2];
-    [SerializeField] private TrailRenderer[] skidMarks = new TrailRenderer[2];
+    [SerializeField] private TrailRenderer[] skidMarks = new TrailRenderer[4];
     [SerializeField] private ParticleSystem[] skidSmokes = new ParticleSystem[2];
+    [HideInInspector] Vector3 carBodyStartPosition;
 
     [Header("Suspension Settings")]
     [SerializeField] private float springStiffness;
@@ -59,9 +60,12 @@ public class CarController : MonoBehaviour
     [SerializeField] private float maxBoostSpeed = 300f;
 
     [Header("Handbreak Settings")]
+    [HideInInspector] public bool isHandbreaking = false;
     [HideInInspector] public bool isBreaking = false;
     [HideInInspector] public bool isDrifting = false;
-    
+    [HideInInspector] public bool isDriftingLeft = false;
+
+
 
     //ground Triggers
     [HideInInspector] public int[] wheelIsGrounded = new int[4];
@@ -72,23 +76,25 @@ public class CarController : MonoBehaviour
     [SerializeField] private float tireRotSpeed = 3000f;
     [SerializeField] private float maxSteeringAngle = 30f;
     [SerializeField] private float minSideSkidVelocity = 10f;
-    
 
-    
-    void Awake() 
+
+
+    void Awake()
     {
         carRB = GetComponent<Rigidbody>();
         carCollider = GetComponent<CapsuleCollider>();
         carSounds = GetComponent<CarSounds>();
         transposer = vcam.GetCinemachineComponent<CinemachineTransposer>();
         if (carRB == null) Debug.LogError("Rigidbody not found on the car object.");
+
+        carBodyStartPosition = carVisuals[1].transform.localPosition; //record of wherre the car body starts for animations
     }
 
     void FixedUpdate() {
         Debug.DrawRay(transform.position, transform.up * failedRayLength, Color.blue);
         Suspension();
         GroundCheck();
-        if(!isGrounded && !isFailedLanding) FailedLandCheck();
+        if (!isGrounded && !isFailedLanding) FailedLandCheck();
         CalculateCarVelocity();
         Movement();
         Visuals();
@@ -96,22 +102,22 @@ public class CarController : MonoBehaviour
     }
 
     void Update() {
-        GetPlayerInput();
+        // GetPlayerInput();
     }
 
-#region Controller Input
-    public void IsAccelerating(float ans){
+    #region Controller Input
+    public void IsAccelerating(float ans) {
         moveInput = ans;
     }
 
-    public void IsSteering(float ans){
+    public void IsSteering(float ans) {
         steerInput = ans;
     }
 
-    public void IsBoosting(bool ans){
+    public void IsBoosting(bool ans) {
         if (ans)
         {
-            Debug.Log(" Boosting! "); 
+            Debug.Log(" Boosting! ");
             // CameraChangeFollowBoost();
             isBoosting = true;
             carSounds.PlayBoostSound();
@@ -124,45 +130,45 @@ public class CarController : MonoBehaviour
         }
     }
 
-    public void IsHandbreaking(bool ans){
+    public void IsHandbreaking(bool ans)
+    {
         if (ans)
         {
             isBoosting = false;
-            isBreaking = true;
-            Debug.Log("Hand Break!");
+            isHandbreaking = true;
             carSounds.PlayHandbrakeSound();
 
         }
         else
         {
-            isBreaking = false;
-            Debug.Log("Hand Break released.");
+            isHandbreaking = false;
+            carSounds.PlayHandbrakeSound();
         }
     }
 
-    public void IsHardReseting(){
+    public void IsHardReseting() {
         HardResetRotation();
         carSounds.PlayCarHorn();
     }
 
-    private void GetPlayerInput()
-    {
+    // private void GetPlayerInput()
+    // {
 
-        if (Input.GetKeyDown(KeyCode.V))
-        {
-            carSounds.PlayCarHorn();
-            DriftRotation();
-            isDrifting = true;
-        }
-        if (Input.GetKeyUp(KeyCode.V ))
-        {
-            carSounds.PlayCarHorn();
-            ResetDriftRotation();
-            isDrifting = false;
-        }
-        
-    }
-#endregion
+    //     if (Input.GetKeyDown(KeyCode.V))
+    //     {
+    //         carSounds.PlayCarHorn();
+    //         DriftRotation();
+    //         isDrifting = true;
+    //     }
+    //     if (Input.GetKeyUp(KeyCode.V))
+    //     {
+    //         carSounds.PlayCarHorn();
+    //         ResetDriftRotation();
+    //         isDrifting = false;
+    //     }
+
+    // }
+    #endregion
 
     private void ResetRotationInAir()
     {
@@ -174,12 +180,12 @@ public class CarController : MonoBehaviour
 
     private void Suspension()
     {
-        for(int i = 0; i < rayPoints.Length; i++)
+        for (int i = 0; i < rayPoints.Length; i++)
         {
             RaycastHit hit;
             float maxLength = restLength + springTravel;
 
-            if(Physics.Raycast(rayPoints[i].position, -rayPoints[i].up, out hit, maxLength + wheelRadius, drivable))
+            if (Physics.Raycast(rayPoints[i].position, -rayPoints[i].up, out hit, maxLength + wheelRadius, drivable))
             {
 
                 wheelIsGrounded[i] = 1;
@@ -195,7 +201,7 @@ public class CarController : MonoBehaviour
 
                 float netForce = springForce - dampForce;
 
-                carRB.AddForceAtPosition(netForce * rayPoints[i].up , rayPoints[i].position);
+                carRB.AddForceAtPosition(netForce * rayPoints[i].up, rayPoints[i].position);
 
                 //Tire Visuals
                 //old code from video
@@ -230,12 +236,12 @@ public class CarController : MonoBehaviour
         //I had this set to 3 for a while it fixed the car from flipping over but it was not realistic.
         if (tempGroundedWheels >= 2)
         {
-            if(!isGrounded){
+            if (!isGrounded) {
                 carRB.drag = 1f;
                 carRB.angularDrag = 10f;
             }
             isGrounded = true;
-            
+
         }
         else
         {
@@ -252,19 +258,31 @@ public class CarController : MonoBehaviour
 
     private void Movement()
     {
-
-        if (isGrounded){
-            if (isBreaking)
+        if (isGrounded) {
+            if (isHandbreaking)
             {
-                HandBrake();
-                return;
+                if (steerInput > 0.2f || steerInput < -0.2f)
+                {
+                    Drifting();
+                }
+                else
+                {
+                    HandBrake();
+                    return;
+                }
             }
+
+            if (isDrifting && !isHandbreaking)
+            {
+                EndDrifting();
+            }
+
             Acceleration();
             Deceleration();
             Turn();
             SidewaysDrag();
         }
-        else{
+        else {
             AirbornePhysics();
         }
 
@@ -291,9 +309,9 @@ public class CarController : MonoBehaviour
 
     private void Turn()
     {
-        carRB.AddRelativeTorque(steerStrength * steerInput * 
-            turningCurve.Evaluate(Mathf.Abs(carVelocityRatio)) * 
-            Mathf.Sign(carVelocityRatio) * carRB.transform.up, 
+        carRB.AddRelativeTorque(steerStrength * steerInput *
+            turningCurve.Evaluate(Mathf.Abs(carVelocityRatio)) *
+            Mathf.Sign(carVelocityRatio) * carRB.transform.up,
             ForceMode.Acceleration
         );
     }
@@ -301,7 +319,8 @@ public class CarController : MonoBehaviour
     private Coroutine handBrakeRoutine;
     public void HandBrake()
     {
-        if(isGrounded == false) return; // Only apply handbrake when grounded
+        Debug.Log("Handbraking!");
+        if (isGrounded == false) return; // Only apply handbrake when grounded
         // Stop any existing handbrake coroutine to prevent stacking
         if (handBrakeRoutine != null)
             StopCoroutine(handBrakeRoutine);
@@ -316,7 +335,7 @@ public class CarController : MonoBehaviour
 
         float time = 0f;
 
-        while (time < duration && isBreaking)
+        while (time < duration && isHandbreaking)
         {
             float t = time / duration;
 
@@ -338,8 +357,8 @@ public class CarController : MonoBehaviour
     private void Boost()
     {
         currentSpeed = Vector3.Dot(carRB.velocity, transform.forward);
-        if (currentSpeed < maxBoostSpeed){
-            if(isGrounded)
+        if (currentSpeed < maxBoostSpeed) {
+            if (isGrounded)
             {
                 carRB.AddForceAtPosition(acceleration * boostMultiplier * transform.forward, accelerationPoint.position, ForceMode.Acceleration);
             }
@@ -382,24 +401,24 @@ public class CarController : MonoBehaviour
 
     private void AirbornePhysics()
     {
-        if(isGrounded) return; // Only apply airborne physics when not grounded
+        if (isGrounded) return; // Only apply airborne physics when not grounded
         carRB.AddForce(acceleration * airFloat * Vector3.down, ForceMode.Acceleration);
         Vector3 flatForward = transform.forward;
         flatForward.y = 0f;
         flatForward.Normalize();
-        if(!isBoosting)
+        if (!isBoosting)
         {
             carRB.AddForce(acceleration * airTravel * flatForward, ForceMode.Acceleration);
         }
-        else{
-            carRB.AddForce(acceleration * (airTravel*2) * flatForward, ForceMode.Acceleration);
+        else {
+            carRB.AddForce(acceleration * (airTravel * 2) * flatForward, ForceMode.Acceleration);
         }
     }
 
     private void SidewaysDrag()
     {
         float currentSidewaysSpeed = currentCarLocalVelocity.x;
-        
+
         float dragMagnitude = -currentSidewaysSpeed * dragCoefficient;
 
         Vector3 dragForce = transform.right * dragMagnitude;
@@ -407,21 +426,92 @@ public class CarController : MonoBehaviour
         carRB.AddForceAtPosition(dragForce, carRB.worldCenterOfMass, ForceMode.Acceleration);
     }
 
+    #region Drifting Logic
+
+    private void Drifting()
+    {
+        if (isHandbreaking)
+        {
+            if (!isDrifting)
+            {
+                Debug.Log("Drifting Start!");
+                isDriftingLeft = steerInput > 0 ? false : true;
+                isDrifting = true;
+                bounceRoutine = StartCoroutine(AnimateCarBodyBounce(0.2f, 0.2f));
+                DriftRotation();
+            }
+            return;
+        }
+    }
+
+    private void EndDrifting()
+    {
+
+        if (isDrifting && !isHandbreaking)
+        {
+            Debug.Log("Drifting End!");
+            isDrifting = false;
+            if (bounceRoutine == null) bounceRoutine = StartCoroutine(AnimateCarBodyBounce(0.2f, 0.2f));
+            ResetDriftRotation();
+        }
+    }
+
+    private Coroutine bounceRoutine;
+
+    private IEnumerator AnimateCarBodyBounce(float duration, float bounceHeight)
+    {
+        // Car body bounce
+        GameObject carBody = carVisuals[1];
+        Debug.Log("Car Body Start Position: " + carBodyStartPosition);
+        Vector3 carBodyTarget = carBodyStartPosition + new Vector3(0f, bounceHeight, 0f);
+
+        float time = 0f;
+        while (time < duration)
+        {
+            float t = time / duration;
+
+            carBody.transform.localPosition = Vector3.Lerp(carBodyStartPosition, carBodyTarget, Mathf.Sin(t * Mathf.PI)); // Ease in & out
+
+            time += Time.deltaTime;
+            yield return null;
+        }
+
+        carBody.transform.localPosition = carBodyStartPosition;
+        bounceRoutine = null;
+    }
+
     private void DriftRotation()
     {
-        foreach(var obj in carVisuals)
+        foreach (var obj in carVisuals)
         {
-            obj.transform.Rotate(0f, -50.0f, 0f, Space.Self);
+            if (isDriftingLeft)
+            {
+                obj.transform.Rotate(0f, -50.0f, 0f, Space.Self);
+            }
+            else
+            {
+                obj.transform.Rotate(0f, 50.0f, 0f, Space.Self);
+            }
         }
     }
 
     private void ResetDriftRotation()
     {
-        foreach(var obj in carVisuals)
+        foreach (var obj in carVisuals)
         {
-            obj.transform.Rotate(0f, 50f, 0f, Space.Self);
+            if (isDriftingLeft)
+            {
+                obj.transform.Rotate(0f, 50.0f, 0f, Space.Self);
+            }
+            else
+            {
+                obj.transform.Rotate(0f, -50.0f, 0f, Space.Self);
+            }
         }
     }
+    #endregion
+
+    #region Car Visuals
 
     private void Visuals()
     {
@@ -433,16 +523,16 @@ public class CarController : MonoBehaviour
     {
         float steeringAngle = maxSteeringAngle * steerInput;
 
-        for(int i = 0; i < tires.Length; i++)
+        for (int i = 0; i < tires.Length; i++)
         {
             tires[i].transform.Rotate(Vector3.right, tireRotSpeed * carVelocityRatio * Time.deltaTime, Space.Self);
 
-            if(i < 2){
+            if (i < 2) {
                 frontTireParents[i].transform.localEulerAngles = new Vector3(frontTireParents[i].transform.localEulerAngles.x, steeringAngle, frontTireParents[i].transform.localEulerAngles.z);
             }
-            
+
         }
-    } 
+    }
 
     private void SetTirePosition(GameObject tire, Vector3 targetPosition)
     {
@@ -451,35 +541,38 @@ public class CarController : MonoBehaviour
 
     private void TireVfx()
     {
-        if(isGrounded && currentCarLocalVelocity.x > minSideSkidVelocity || isGrounded && currentCarLocalVelocity.x < -minSideSkidVelocity){
+        // if (isGrounded && currentCarLocalVelocity.x > minSideSkidVelocity || isGrounded && currentCarLocalVelocity.x < -minSideSkidVelocity) {
+        if (isGrounded && isDrifting) {
             ToggleSkidMarks(true);
             ToggleSkidSmokes(true);
             carSounds.ToggleSkidSound(true);
         }
-        else{
+        else {
             ToggleSkidMarks(false);
             ToggleSkidSmokes(false);
             carSounds.ToggleSkidSound(false);
         }
     }
 
-    private void ToggleSkidMarks(bool toggle){
-        foreach(var skidMark in skidMarks){
+    private void ToggleSkidMarks(bool toggle) {
+        foreach (var skidMark in skidMarks) {
             skidMark.emitting = toggle;
         }
     }
 
-    private void ToggleSkidSmokes(bool toggle){
-        foreach(var smoke in skidSmokes){
-            if(toggle){
+    private void ToggleSkidSmokes(bool toggle) {
+        foreach (var smoke in skidSmokes) {
+            if (toggle) {
                 smoke.Play();
             }
-            else{
+            else {
                 smoke.Stop();
             }
         }
     }
+    #endregion
 
+    #region Car Reset Logic
     private void HardResetRotation()
     {
         Vector3 flatForward = Vector3.ProjectOnPlane(transform.forward, Vector3.up).normalized;
@@ -526,7 +619,7 @@ public class CarController : MonoBehaviour
         Debug.DrawRay(transform.position, transform.up * failedRayLength, Color.blue);
     }
 
-    private void ResetCar(){
+    private void ResetCar() {
         if (flashRoutine != null)
             StopCoroutine(flashRoutine);
 
@@ -537,8 +630,8 @@ public class CarController : MonoBehaviour
     private IEnumerator FlashAndReset(GameObject obj)
     {
         Renderer[] renderers = obj.GetComponentsInChildren<Renderer>();
-        
-        for(int i = 0; i < 5; i++)
+
+        for (int i = 0; i < 5; i++)
         {
             // Make invisible
             foreach (var rend in renderers)
@@ -549,7 +642,7 @@ public class CarController : MonoBehaviour
             // Make visible
             foreach (var rend in renderers)
                 rend.enabled = true;
-            
+
             yield return new WaitForSeconds(0.2f);
         }
 
@@ -570,3 +663,4 @@ public class CarController : MonoBehaviour
         yield return new WaitForSeconds(0.2f);
     }
 }
+#endregion
