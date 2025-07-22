@@ -65,6 +65,11 @@ public class CarController : MonoBehaviour
     [HideInInspector] public bool isDrifting = false;
     [HideInInspector] public bool isDriftingLeft = false;
 
+    [Header("Drift Settings")]
+    [Tooltip("How much the car handles while drifting, Lower the number the more control you have while drifting (1f is just allows the player to drive straight when counter turning!)")]
+    [Range(1f, 4f)]
+    [SerializeField] private float driftHandling = 4f; 
+
 
 
     //ground Triggers
@@ -261,9 +266,10 @@ public class CarController : MonoBehaviour
         if (isGrounded) {
             if (isHandbreaking)
             {
-                if (steerInput > 0.2f || steerInput < -0.2f)
+                if (steerInput > 0f || steerInput < 0f || isDrifting)
                 {
                     Drifting();
+                    return;
                 }
                 else
                 {
@@ -440,8 +446,52 @@ public class CarController : MonoBehaviour
                 bounceRoutine = StartCoroutine(AnimateCarBodyBounce(0.2f, 0.2f));
                 DriftRotation();
             }
+            else
+            {
+                DriftAcceleration();
+                DriftTorque();
+            }
             return;
         }
+    }
+    
+    private void DriftAcceleration()
+    {
+        currentSpeed = Vector3.Dot(carRB.velocity, transform.forward);
+
+        if (currentSpeed < maxSpeed)
+        {
+            carRB.AddForceAtPosition(acceleration * 1f * transform.forward, accelerationPoint.position, ForceMode.Acceleration);
+        }
+    }
+    
+    private void DriftTorque()
+    {
+        float torqueInput = isDriftingLeft ? -1f : 1f;
+        
+        float driftSteer = DriftSteering();
+
+        carRB.AddRelativeTorque(steerStrength *
+            (torqueInput - (-driftSteer)) *
+            turningCurve.Evaluate(Mathf.Abs(carVelocityRatio)) *
+            Mathf.Sign(carVelocityRatio) * carRB.transform.up,
+            ForceMode.Acceleration
+        );
+    }
+
+    private float DriftSteering()
+    {
+        float steer = steerInput;
+        if (!isDriftingLeft && steer < 0f)
+        {
+            // steer = 0f;
+            steer = steer / driftHandling;
+        }
+        if (isDriftingLeft && steer > 0f)
+        {
+            steer = steer / driftHandling;
+        }
+        return steer;
     }
 
     private void EndDrifting()
@@ -486,11 +536,11 @@ public class CarController : MonoBehaviour
         {
             if (isDriftingLeft)
             {
-                obj.transform.Rotate(0f, -50.0f, 0f, Space.Self);
+                obj.transform.Rotate(0f, -30.0f, 0f, Space.Self);
             }
             else
             {
-                obj.transform.Rotate(0f, 50.0f, 0f, Space.Self);
+                obj.transform.Rotate(0f, 30.0f, 0f, Space.Self);
             }
         }
     }
@@ -501,11 +551,11 @@ public class CarController : MonoBehaviour
         {
             if (isDriftingLeft)
             {
-                obj.transform.Rotate(0f, 50.0f, 0f, Space.Self);
+                obj.transform.Rotate(0f, 30.0f, 0f, Space.Self);
             }
             else
             {
-                obj.transform.Rotate(0f, -50.0f, 0f, Space.Self);
+                obj.transform.Rotate(0f, -30.0f, 0f, Space.Self);
             }
         }
     }
