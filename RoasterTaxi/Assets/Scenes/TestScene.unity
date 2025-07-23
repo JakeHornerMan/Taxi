@@ -242,8 +242,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 330585543}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.11835273, y: -0.6971319, z: 0.118352786, w: 0.69713163}
-  m_LocalPosition: {x: 99.7, y: 5.15, z: 0.000000834465}
+  m_LocalRotation: {x: 0.11835274, y: 0.6971319, z: -0.11835279, w: 0.6971316}
+  m_LocalPosition: {x: 113, y: 5.15, z: 0.000000834465}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -39966,6 +39966,7 @@ MonoBehaviour:
     m_RotationOrder: 4
   dragCoefficient: 3
   failedRayLength: 0.75
+  jumpMulti: 2
   airFloat: 1.2
   airTravel: 0.5
   isBoosting: 0
@@ -39975,7 +39976,7 @@ MonoBehaviour:
   isBreaking: 0
   isDrifting: 0
   isDriftingLeft: 0
-  driftHandling: 4
+  driftHandling: 1.2
   wheelIsGrounded: 00000000000000000000000000000000
   isGrounded: 0
   isFailedLanding: 0
@@ -40290,8 +40291,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6179037985324366061}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.11835274, y: -0.6971319, z: 0.11835278, w: 0.6971316}
-  m_LocalPosition: {x: 7, y: 2.5, z: 0.000002503395}
+  m_LocalRotation: {x: 0.11835274, y: 0.6971319, z: -0.11835279, w: 0.6971316}
+  m_LocalPosition: {x: -6.9999995, y: 2.5, z: 0.00000333786}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -40390,7 +40391,7 @@ Transform:
   m_GameObject: {fileID: 4137124354603255426}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 92.7, y: 2.65, z: 0}
+  m_LocalPosition: {x: 120, y: 2.65, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -40623,6 +40624,10 @@ MonoBehaviour:
       m_Calls: []
     m_ActionId: 9fdb2f10-cb2b-49d0-9e74-fbb8cb254914
     m_ActionName: BaseDriving/FlipRotation[/Keyboard/downArrow,/Keyboard/upArrow]
+  - m_PersistentCalls:
+      m_Calls: []
+    m_ActionId: ac8400e2-55db-46c4-8499-761189d86c24
+    m_ActionName: BaseDriving/Jump[/Keyboard/space,/XInputControllerWindows/buttonSouth]
   m_NeverAutoSwitchControlSchemes: 0
   m_DefaultControlScheme: 
   m_DefaultActionMap: BaseDriving

@@ -49,6 +49,9 @@ public class CarController : MonoBehaviour
     [SerializeField] private float failedRayLength = 1.5f;
 
     [Header("Air-Bourne Settings")]
+    [Tooltip("Amultiplier for the jump force applied to the car when it jumps (increase this to make the car jump higher)")]
+    [Range(1f, 2f)]
+    [SerializeField] private float jumpMulti = 1f; 
     [Tooltip("AIR-BOURNE FALL SPEED: Downwards force applied to the car when it is in the air (reduce this to make the car float more)")]
     [SerializeField] private float airFloat = 1f;
     [Tooltip("AIR-BOURNE Distance: Forwards force applied to the car when it is in the air (increase this to make the car go further in air)")]
@@ -67,7 +70,7 @@ public class CarController : MonoBehaviour
 
     [Header("Drift Settings")]
     [Tooltip("How much the car handles while drifting, Lower the number the more control you have while drifting (1f is just allows the player to drive straight when counter turning!)")]
-    [Range(1f, 4f)]
+    [Range(1.2f, 2.5f)]
     [SerializeField] private float driftHandling = 4f; 
 
 
@@ -119,7 +122,8 @@ public class CarController : MonoBehaviour
         steerInput = ans;
     }
 
-    public void IsBoosting(bool ans) {
+    public void IsBoosting(bool ans)
+    {
         if (ans)
         {
             Debug.Log(" Boosting! ");
@@ -153,6 +157,13 @@ public class CarController : MonoBehaviour
 
     public void IsHardReseting() {
         HardResetRotation();
+        carSounds.PlayCarHorn();
+    }
+
+    public void IsJumping()
+    {
+        Jump();
+        Debug.Log("Jumping!");
         carSounds.PlayCarHorn();
     }
 
@@ -405,6 +416,12 @@ public class CarController : MonoBehaviour
         offsetRoutine = null;
     }
 
+    private void Jump()
+    {
+        if (!isGrounded) return;
+        carRB.AddForceAtPosition( 10000f * jumpMulti * transform.up, accelerationPoint.position, ForceMode.Impulse);
+    }
+
     private void AirbornePhysics()
     {
         if (isGrounded) return; // Only apply airborne physics when not grounded
@@ -416,7 +433,8 @@ public class CarController : MonoBehaviour
         {
             carRB.AddForce(acceleration * airTravel * flatForward, ForceMode.Acceleration);
         }
-        else {
+        else
+        {
             carRB.AddForce(acceleration * (airTravel * 2) * flatForward, ForceMode.Acceleration);
         }
     }

@@ -107,6 +107,15 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": true
+                },
+                {
+                    ""name"": ""Jump"",
+                    ""type"": ""Button"",
+                    ""id"": ""ac8400e2-55db-46c4-8499-761189d86c24"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
                 }
             ],
             ""bindings"": [
@@ -124,7 +133,7 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
                 {
                     ""name"": """",
                     ""id"": ""776e900d-7bbd-4769-8d2d-f40720270dae"",
-                    ""path"": ""<Gamepad>/rightShoulder"",
+                    ""path"": ""<Gamepad>/leftShoulder"",
                     ""interactions"": ""Hold"",
                     ""processors"": """",
                     ""groups"": """",
@@ -146,7 +155,7 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
                 {
                     ""name"": """",
                     ""id"": ""20768d78-6406-45dc-b0fb-066b066926a4"",
-                    ""path"": ""<Gamepad>/leftShoulder"",
+                    ""path"": ""<Gamepad>/rightShoulder"",
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": """",
@@ -340,6 +349,28 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
                     ""action"": ""FlipRotation"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": true
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""337b35e3-fd08-45b6-a8f1-0fdb0f2d915d"",
+                    ""path"": ""<Keyboard>/space"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Jump"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""62ccae30-15d9-48f1-afed-0a0ad9c2f48c"",
+                    ""path"": ""<Gamepad>/buttonSouth"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Jump"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
                 }
             ]
         }
@@ -357,6 +388,7 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
         m_BaseDriving_Tricking = m_BaseDriving.FindAction("Tricking", throwIfNotFound: true);
         m_BaseDriving_TwistRotation = m_BaseDriving.FindAction("TwistRotation", throwIfNotFound: true);
         m_BaseDriving_FlipRotation = m_BaseDriving.FindAction("FlipRotation", throwIfNotFound: true);
+        m_BaseDriving_Jump = m_BaseDriving.FindAction("Jump", throwIfNotFound: true);
     }
 
     public void Dispose()
@@ -427,6 +459,7 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
     private readonly InputAction m_BaseDriving_Tricking;
     private readonly InputAction m_BaseDriving_TwistRotation;
     private readonly InputAction m_BaseDriving_FlipRotation;
+    private readonly InputAction m_BaseDriving_Jump;
     public struct BaseDrivingActions
     {
         private @PlayerControls m_Wrapper;
@@ -440,6 +473,7 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
         public InputAction @Tricking => m_Wrapper.m_BaseDriving_Tricking;
         public InputAction @TwistRotation => m_Wrapper.m_BaseDriving_TwistRotation;
         public InputAction @FlipRotation => m_Wrapper.m_BaseDriving_FlipRotation;
+        public InputAction @Jump => m_Wrapper.m_BaseDriving_Jump;
         public InputActionMap Get() { return m_Wrapper.m_BaseDriving; }
         public void Enable() { Get().Enable(); }
         public void Disable() { Get().Disable(); }
@@ -476,6 +510,9 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
             @FlipRotation.started += instance.OnFlipRotation;
             @FlipRotation.performed += instance.OnFlipRotation;
             @FlipRotation.canceled += instance.OnFlipRotation;
+            @Jump.started += instance.OnJump;
+            @Jump.performed += instance.OnJump;
+            @Jump.canceled += instance.OnJump;
         }
 
         private void UnregisterCallbacks(IBaseDrivingActions instance)
@@ -507,6 +544,9 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
             @FlipRotation.started -= instance.OnFlipRotation;
             @FlipRotation.performed -= instance.OnFlipRotation;
             @FlipRotation.canceled -= instance.OnFlipRotation;
+            @Jump.started -= instance.OnJump;
+            @Jump.performed -= instance.OnJump;
+            @Jump.canceled -= instance.OnJump;
         }
 
         public void RemoveCallbacks(IBaseDrivingActions instance)
@@ -535,5 +575,6 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
         void OnTricking(InputAction.CallbackContext context);
         void OnTwistRotation(InputAction.CallbackContext context);
         void OnFlipRotation(InputAction.CallbackContext context);
+        void OnJump(InputAction.CallbackContext context);
     }
 }

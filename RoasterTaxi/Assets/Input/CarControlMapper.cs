@@ -9,7 +9,7 @@ public class CarControlMapper : MonoBehaviour, PlayerControls.IBaseDrivingAction
     private CarController carController;
     private CarTricking carTricking;
     private PlayerControls playerControls;
-    
+
     private bool isDecelerating = false;
 
     private InputAction accelerateAction;
@@ -40,7 +40,8 @@ public class CarControlMapper : MonoBehaviour, PlayerControls.IBaseDrivingAction
         HandleFlipRotation();
     }
 
-    private void HandleCarAcceleration(){
+    private void HandleCarAcceleration()
+    {
         float accel = accelerateAction.ReadValue<float>();
         float decel = decelerateAction.ReadValue<float>();
 
@@ -48,12 +49,13 @@ public class CarControlMapper : MonoBehaviour, PlayerControls.IBaseDrivingAction
         carController.IsAccelerating(throttle);
     }
 
-    public void OnAccelerate(InputAction.CallbackContext context){}
+    public void OnAccelerate(InputAction.CallbackContext context) { }
 
-    public void OnDecelerate(InputAction.CallbackContext context){}
+    public void OnDecelerate(InputAction.CallbackContext context) { }
 
-    public void OnSteer(InputAction.CallbackContext context){}
-    private void HandleCarSteering(){
+    public void OnSteer(InputAction.CallbackContext context) { }
+    private void HandleCarSteering()
+    {
         float steerInput = playerControls.BaseDriving.Steer.ReadValue<float>();
         carController.IsSteering(steerInput);
     }
@@ -93,7 +95,7 @@ public class CarControlMapper : MonoBehaviour, PlayerControls.IBaseDrivingAction
         }
     }
 
-    public void OnTricking(InputAction.CallbackContext context){}
+    public void OnTricking(InputAction.CallbackContext context) { }
 
     private void HandleCarTricking()
     {
@@ -105,25 +107,31 @@ public class CarControlMapper : MonoBehaviour, PlayerControls.IBaseDrivingAction
             carTricking.TwistRotation(trickingInput.x);
         }
 
-        if(Mathf.Abs(trickingInput.y) > 0.2f){
+        if (Mathf.Abs(trickingInput.y) > 0.2f)
+        {
             Debug.Log($"Tricking Input Y: {trickingInput.y}");
             carTricking.FlipRotation(trickingInput.y);
         }
     }
 
-    public void OnTwistRotation(InputAction.CallbackContext context){}
+    public void OnTwistRotation(InputAction.CallbackContext context) { }
     private void HandleTwistRotation()
     {
         float twistInput = playerControls.BaseDriving.TwistRotation.ReadValue<float>();
         carTricking.TwistRotation(twistInput);
     }
 
-    public void OnFlipRotation(InputAction.CallbackContext context){}
+    public void OnFlipRotation(InputAction.CallbackContext context) { }
 
     private void HandleFlipRotation()
     {
         float flipInput = playerControls.BaseDriving.FlipRotation.ReadValue<float>();
         carTricking.FlipRotation(flipInput);
+    }
+
+    public void OnJump(InputAction.CallbackContext context)
+    {
+        carController.IsJumping();
     }
 
 }
