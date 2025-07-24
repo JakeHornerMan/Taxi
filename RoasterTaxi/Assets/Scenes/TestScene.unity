@@ -39966,7 +39966,8 @@ MonoBehaviour:
     m_RotationOrder: 4
   dragCoefficient: 3
   failedRayLength: 0.75
-  jumpMulti: 2
+  isJumping: 0
+  jumpMulti: 1.2
   airFloat: 1.2
   airTravel: 0.5
   isBoosting: 0

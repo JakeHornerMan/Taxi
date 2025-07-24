@@ -49,6 +49,7 @@ public class CarController : MonoBehaviour
     [SerializeField] private float failedRayLength = 1.5f;
 
     [Header("Air-Bourne Settings")]
+    [HideInInspector] public bool isJumping = false;
     [Tooltip("Amultiplier for the jump force applied to the car when it jumps (increase this to make the car jump higher)")]
     [Range(1f, 2f)]
     [SerializeField] private float jumpMulti = 1f; 
@@ -85,7 +86,7 @@ public class CarController : MonoBehaviour
     [SerializeField] private float maxSteeringAngle = 30f;
     [SerializeField] private float minSideSkidVelocity = 10f;
 
-
+#region Update and Initialization
 
     void Awake()
     {
@@ -112,9 +113,12 @@ public class CarController : MonoBehaviour
     void Update() {
         // GetPlayerInput();
     }
+    
+#endregion
 
     #region Controller Input
-    public void IsAccelerating(float ans) {
+    public void IsAccelerating(float ans)
+    {
         moveInput = ans;
     }
 
@@ -167,32 +171,10 @@ public class CarController : MonoBehaviour
         carSounds.PlayCarHorn();
     }
 
-    // private void GetPlayerInput()
-    // {
-
-    //     if (Input.GetKeyDown(KeyCode.V))
-    //     {
-    //         carSounds.PlayCarHorn();
-    //         DriftRotation();
-    //         isDrifting = true;
-    //     }
-    //     if (Input.GetKeyUp(KeyCode.V))
-    //     {
-    //         carSounds.PlayCarHorn();
-    //         ResetDriftRotation();
-    //         isDrifting = false;
-    //     }
-
-    // }
     #endregion
 
-    private void ResetRotationInAir()
-    {
-        if (rotationResetRoutine != null)
-            StopCoroutine(rotationResetRoutine);
-
-        rotationResetRoutine = StartCoroutine(SmoothResetRotation(1f));
-    }
+#region Car Suspension and Ground Check
+    
 
     private void Suspension()
     {
@@ -250,7 +232,7 @@ public class CarController : MonoBehaviour
         }
 
         //I had this set to 3 for a while it fixed the car from flipping over but it was not realistic.
-        if (tempGroundedWheels >= 2)
+        if (tempGroundedWheels >= 3)
         {
             if (!isGrounded) {
                 carRB.drag = 1f;
@@ -265,16 +247,29 @@ public class CarController : MonoBehaviour
             isGrounded = false;
         }
     }
+    
+    private void ResetRotationInAir()
+    {
+        if (rotationResetRoutine != null)
+            StopCoroutine(rotationResetRoutine);
+
+        rotationResetRoutine = StartCoroutine(SmoothResetRotation(1f));
+    }
+    #endregion
+
+#region Car Movement Logic
 
     private void CalculateCarVelocity()
     {
         currentCarLocalVelocity = transform.InverseTransformDirection(carRB.velocity);
         carVelocityRatio = currentCarLocalVelocity.z / maxSpeed;
+        Debug.Log("carVelocityRatio: " + carVelocityRatio);
     }
 
     private void Movement()
     {
-        if (isGrounded) {
+        if (isGrounded)
+        {
             if (isHandbreaking)
             {
                 if (steerInput > 0f || steerInput < 0f || isDrifting)
@@ -299,7 +294,8 @@ public class CarController : MonoBehaviour
             Turn();
             SidewaysDrag();
         }
-        else {
+        else
+        {
             AirbornePhysics();
         }
 
@@ -331,6 +327,17 @@ public class CarController : MonoBehaviour
             Mathf.Sign(carVelocityRatio) * carRB.transform.up,
             ForceMode.Acceleration
         );
+    }
+
+    private void SidewaysDrag()
+    {
+        float currentSidewaysSpeed = currentCarLocalVelocity.x;
+
+        float dragMagnitude = -currentSidewaysSpeed * dragCoefficient;
+
+        Vector3 dragForce = transform.right * dragMagnitude;
+
+        carRB.AddForceAtPosition(dragForce, carRB.worldCenterOfMass, ForceMode.Acceleration);
     }
 
     private Coroutine handBrakeRoutine;
@@ -381,6 +388,9 @@ public class CarController : MonoBehaviour
             }
         }
     }
+    #endregion
+
+    #region Camera Logic
 
     public void CameraChangeFollowBoost()
     {
@@ -416,10 +426,19 @@ public class CarController : MonoBehaviour
         offsetRoutine = null;
     }
 
+    #endregion
+    
+    #region Jump And Airbourne Logic
+
     private void Jump()
     {
         if (!isGrounded) return;
-        carRB.AddForceAtPosition( 10000f * jumpMulti * transform.up, accelerationPoint.position, ForceMode.Impulse);
+        carRB.AddForceAtPosition(10000f * jumpMulti * transform.up, accelerationPoint.position, ForceMode.Impulse);
+        isJumping = true;
+        Vector3 flatForward = transform.forward;
+        flatForward.y = 0f;
+        flatForward.Normalize();
+        if (carVelocityRatio >= 0.025f) carRB.AddForceAtPosition(100f * carVelocityRatio * flatForward, accelerationPoint.position, ForceMode.Impulse);
     }
 
     private void AirbornePhysics()
@@ -429,26 +448,19 @@ public class CarController : MonoBehaviour
         Vector3 flatForward = transform.forward;
         flatForward.y = 0f;
         flatForward.Normalize();
+
+        if (carVelocityRatio < 0.02) { return; }
+        
         if (!isBoosting)
         {
             carRB.AddForce(acceleration * airTravel * flatForward, ForceMode.Acceleration);
         }
-        else
+        if(isBoosting)
         {
             carRB.AddForce(acceleration * (airTravel * 2) * flatForward, ForceMode.Acceleration);
         }
     }
-
-    private void SidewaysDrag()
-    {
-        float currentSidewaysSpeed = currentCarLocalVelocity.x;
-
-        float dragMagnitude = -currentSidewaysSpeed * dragCoefficient;
-
-        Vector3 dragForce = transform.right * dragMagnitude;
-
-        carRB.AddForceAtPosition(dragForce, carRB.worldCenterOfMass, ForceMode.Acceleration);
-    }
+    #endregion
 
     #region Drifting Logic
 
