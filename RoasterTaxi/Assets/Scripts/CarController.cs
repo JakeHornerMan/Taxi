@@ -68,6 +68,7 @@ public class CarController : MonoBehaviour
     [HideInInspector] public bool isBreaking = false;
     [HideInInspector] public bool isDrifting = false;
     [HideInInspector] public bool isDriftingLeft = false;
+    [HideInInspector] public bool driftReset = true; // Reset drift state
 
     [Header("Drift Settings")]
     [Tooltip("How much the car handles while drifting, Lower the number the more control you have while drifting (1f is just allows the player to drive straight when counter turning!)")]
@@ -270,7 +271,7 @@ public class CarController : MonoBehaviour
     {
         if (isGrounded)
         {
-            if (isHandbreaking)
+            if (isHandbreaking && driftReset)
             {
                 if (steerInput > 0f || steerInput < 0f || isDrifting)
                 {
@@ -527,13 +528,21 @@ public class CarController : MonoBehaviour
     private void EndDrifting()
     {
 
-        if (isDrifting && !isHandbreaking)
+        if (isDrifting && !isHandbreaking && driftReset) //we need to reset the drift state so the player has time between drifts
         {
+            driftReset = false; // Reset drift state
             Debug.Log("Drifting End!");
             isDrifting = false;
             if (bounceRoutine == null) bounceRoutine = StartCoroutine(AnimateCarBodyBounce(0.2f, 0.2f));
             ResetDriftRotation();
+            StartCoroutine(DelayedDriftEnd(0.2f));//need to be same as bounce duration
         }
+    }
+
+    private IEnumerator DelayedDriftEnd(float delay)
+    {
+        yield return new WaitForSeconds(delay);
+        driftReset = true;
     }
 
     private Coroutine bounceRoutine;
