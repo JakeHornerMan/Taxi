@@ -33,6 +33,8 @@ public class CarControlMapper : MonoBehaviour, PlayerControls.IBaseDrivingAction
 
         HandleCarSteering();
 
+        HandleCarDirectional();
+
         HandleCarTricking();
 
         HandleTwistRotation();
@@ -60,6 +62,16 @@ public class CarControlMapper : MonoBehaviour, PlayerControls.IBaseDrivingAction
         carController.IsSteering(steerInput);
     }
 
+    public void OnCarDirectional(InputAction.CallbackContext context) { }
+
+    private void HandleCarDirectional()
+    {
+        float directionalInput = playerControls.BaseDriving.CarDirectional.ReadValue<float>();
+        // Debug.Log($"Directional Input: {directionalInput}");
+        if (directionalInput > 0.9f) carController.IsFlickForeward(true);
+        if(directionalInput < -0.9f) carController.IsFlickBackward(true);
+    }
+
     public void OnBoost(InputAction.CallbackContext context)
     {
         if (context.started)
@@ -72,17 +84,15 @@ public class CarControlMapper : MonoBehaviour, PlayerControls.IBaseDrivingAction
         }
     }
 
-    public void OnHandbreak(InputAction.CallbackContext context)
+    public void OnDrift(InputAction.CallbackContext context)
     {
         if (context.started)
         {
-            Debug.Log("Handbreaking");
-            carController.IsHandbreaking(true);
+            carController.IsDrifting(true);
         }
         else if (context.canceled)
         {
-            Debug.Log("Handbreaking ended");
-            carController.IsHandbreaking(false);
+            carController.IsDrifting(false);
         }
     }
 
@@ -132,6 +142,11 @@ public class CarControlMapper : MonoBehaviour, PlayerControls.IBaseDrivingAction
     public void OnJump(InputAction.CallbackContext context)
     {
         carController.IsJumping();
+    }
+
+    public void OnBeep(InputAction.CallbackContext context)
+    {
+        carController.IsBeeping();
     }
 
 }

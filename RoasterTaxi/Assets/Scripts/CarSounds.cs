@@ -15,7 +15,7 @@ public class CarSounds : MonoBehaviour
     [Header("References")]
     public AudioSource audioSrc;
     [SerializeField] private AudioSource engineSound, skidSound; 
-    [SerializeField] private SoundConfig boostSound, handbrakeSound, carHornSound;
+    [SerializeField] private SoundConfig boostSound, handbrakeSound, carHornSound, failedDriftSound;
 
     [Header("Settings")]
     [SerializeField]
@@ -31,6 +31,7 @@ public class CarSounds : MonoBehaviour
     public void PlayBoostSound() => PlaySoundOnce(boostSound);
     public void PlayHandbrakeSound() => PlaySoundOnce(handbrakeSound);
     public void PlayCarHorn() => PlaySoundOnce(carHornSound);
+    public void PlayFailedDriftSound() => PlaySoundOnce(failedDriftSound);
 
 
     private void PlaySoundOnce(SoundConfig soundConfig)

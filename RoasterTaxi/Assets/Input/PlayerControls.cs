@@ -37,7 +37,7 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
                     ""initialStateCheck"": false
                 },
                 {
-                    ""name"": ""Handbreak"",
+                    ""name"": ""Drift"",
                     ""type"": ""Button"",
                     ""id"": ""3eed9f86-e9dd-4e37-ac59-4d6f7e8b0642"",
                     ""expectedControlType"": ""Button"",
@@ -116,6 +116,24 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""Beep"",
+                    ""type"": ""Button"",
+                    ""id"": ""5dffad67-fdb5-4588-ac2a-2adb52ce8f4a"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""CarDirectional"",
+                    ""type"": ""Value"",
+                    ""id"": ""583655da-e826-4dd1-a7de-bbabf95f7359"",
+                    ""expectedControlType"": ""Axis"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": true
                 }
             ],
             ""bindings"": [
@@ -148,7 +166,7 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": """",
-                    ""action"": ""Handbreak"",
+                    ""action"": ""Drift"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
                 },
@@ -159,7 +177,7 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": """",
-                    ""action"": ""Handbreak"",
+                    ""action"": ""Drift"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
                 },
@@ -364,13 +382,79 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
                 {
                     ""name"": """",
                     ""id"": ""62ccae30-15d9-48f1-afed-0a0ad9c2f48c"",
-                    ""path"": ""<Gamepad>/buttonSouth"",
+                    ""path"": ""<Gamepad>/rightStickPress"",
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": """",
                     ""action"": ""Jump"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""8f6c5b8d-00b0-411a-9865-ddaa4836d42d"",
+                    ""path"": ""<Keyboard>/enter"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Beep"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""ad1f729a-cf0a-4885-94c7-43a567d40824"",
+                    ""path"": ""<Gamepad>/leftStickPress"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Beep"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""8fa3e831-a775-4116-88b0-10936981c88b"",
+                    ""path"": ""<Gamepad>/leftStick/y"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""CarDirectional"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": ""1D Axis"",
+                    ""id"": ""a4ffd93e-4c7f-4a5f-a97b-1e8f2f40db90"",
+                    ""path"": ""1DAxis"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""CarDirectional"",
+                    ""isComposite"": true,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": ""negative"",
+                    ""id"": ""1ca129fb-232a-4d21-a88b-537155d8a6d8"",
+                    ""path"": ""<Keyboard>/s"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""CarDirectional"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": true
+                },
+                {
+                    ""name"": ""positive"",
+                    ""id"": ""88321f59-2f1b-4678-9f04-75824be718f1"",
+                    ""path"": ""<Keyboard>/w"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""CarDirectional"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": true
                 }
             ]
         }
@@ -380,7 +464,7 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
         // BaseDriving
         m_BaseDriving = asset.FindActionMap("BaseDriving", throwIfNotFound: true);
         m_BaseDriving_Boost = m_BaseDriving.FindAction("Boost", throwIfNotFound: true);
-        m_BaseDriving_Handbreak = m_BaseDriving.FindAction("Handbreak", throwIfNotFound: true);
+        m_BaseDriving_Drift = m_BaseDriving.FindAction("Drift", throwIfNotFound: true);
         m_BaseDriving_Accelerate = m_BaseDriving.FindAction("Accelerate", throwIfNotFound: true);
         m_BaseDriving_Decelerate = m_BaseDriving.FindAction("Decelerate", throwIfNotFound: true);
         m_BaseDriving_Steer = m_BaseDriving.FindAction("Steer", throwIfNotFound: true);
@@ -389,6 +473,8 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
         m_BaseDriving_TwistRotation = m_BaseDriving.FindAction("TwistRotation", throwIfNotFound: true);
         m_BaseDriving_FlipRotation = m_BaseDriving.FindAction("FlipRotation", throwIfNotFound: true);
         m_BaseDriving_Jump = m_BaseDriving.FindAction("Jump", throwIfNotFound: true);
+        m_BaseDriving_Beep = m_BaseDriving.FindAction("Beep", throwIfNotFound: true);
+        m_BaseDriving_CarDirectional = m_BaseDriving.FindAction("CarDirectional", throwIfNotFound: true);
     }
 
     public void Dispose()
@@ -451,7 +537,7 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
     private readonly InputActionMap m_BaseDriving;
     private List<IBaseDrivingActions> m_BaseDrivingActionsCallbackInterfaces = new List<IBaseDrivingActions>();
     private readonly InputAction m_BaseDriving_Boost;
-    private readonly InputAction m_BaseDriving_Handbreak;
+    private readonly InputAction m_BaseDriving_Drift;
     private readonly InputAction m_BaseDriving_Accelerate;
     private readonly InputAction m_BaseDriving_Decelerate;
     private readonly InputAction m_BaseDriving_Steer;
@@ -460,12 +546,14 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
     private readonly InputAction m_BaseDriving_TwistRotation;
     private readonly InputAction m_BaseDriving_FlipRotation;
     private readonly InputAction m_BaseDriving_Jump;
+    private readonly InputAction m_BaseDriving_Beep;
+    private readonly InputAction m_BaseDriving_CarDirectional;
     public struct BaseDrivingActions
     {
         private @PlayerControls m_Wrapper;
         public BaseDrivingActions(@PlayerControls wrapper) { m_Wrapper = wrapper; }
         public InputAction @Boost => m_Wrapper.m_BaseDriving_Boost;
-        public InputAction @Handbreak => m_Wrapper.m_BaseDriving_Handbreak;
+        public InputAction @Drift => m_Wrapper.m_BaseDriving_Drift;
         public InputAction @Accelerate => m_Wrapper.m_BaseDriving_Accelerate;
         public InputAction @Decelerate => m_Wrapper.m_BaseDriving_Decelerate;
         public InputAction @Steer => m_Wrapper.m_BaseDriving_Steer;
@@ -474,6 +562,8 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
         public InputAction @TwistRotation => m_Wrapper.m_BaseDriving_TwistRotation;
         public InputAction @FlipRotation => m_Wrapper.m_BaseDriving_FlipRotation;
         public InputAction @Jump => m_Wrapper.m_BaseDriving_Jump;
+        public InputAction @Beep => m_Wrapper.m_BaseDriving_Beep;
+        public InputAction @CarDirectional => m_Wrapper.m_BaseDriving_CarDirectional;
         public InputActionMap Get() { return m_Wrapper.m_BaseDriving; }
         public void Enable() { Get().Enable(); }
         public void Disable() { Get().Disable(); }
@@ -486,9 +576,9 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
             @Boost.started += instance.OnBoost;
             @Boost.performed += instance.OnBoost;
             @Boost.canceled += instance.OnBoost;
-            @Handbreak.started += instance.OnHandbreak;
-            @Handbreak.performed += instance.OnHandbreak;
-            @Handbreak.canceled += instance.OnHandbreak;
+            @Drift.started += instance.OnDrift;
+            @Drift.performed += instance.OnDrift;
+            @Drift.canceled += instance.OnDrift;
             @Accelerate.started += instance.OnAccelerate;
             @Accelerate.performed += instance.OnAccelerate;
             @Accelerate.canceled += instance.OnAccelerate;
@@ -513,6 +603,12 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
             @Jump.started += instance.OnJump;
             @Jump.performed += instance.OnJump;
             @Jump.canceled += instance.OnJump;
+            @Beep.started += instance.OnBeep;
+            @Beep.performed += instance.OnBeep;
+            @Beep.canceled += instance.OnBeep;
+            @CarDirectional.started += instance.OnCarDirectional;
+            @CarDirectional.performed += instance.OnCarDirectional;
+            @CarDirectional.canceled += instance.OnCarDirectional;
         }
 
         private void UnregisterCallbacks(IBaseDrivingActions instance)
@@ -520,9 +616,9 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
             @Boost.started -= instance.OnBoost;
             @Boost.performed -= instance.OnBoost;
             @Boost.canceled -= instance.OnBoost;
-            @Handbreak.started -= instance.OnHandbreak;
-            @Handbreak.performed -= instance.OnHandbreak;
-            @Handbreak.canceled -= instance.OnHandbreak;
+            @Drift.started -= instance.OnDrift;
+            @Drift.performed -= instance.OnDrift;
+            @Drift.canceled -= instance.OnDrift;
             @Accelerate.started -= instance.OnAccelerate;
             @Accelerate.performed -= instance.OnAccelerate;
             @Accelerate.canceled -= instance.OnAccelerate;
@@ -547,6 +643,12 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
             @Jump.started -= instance.OnJump;
             @Jump.performed -= instance.OnJump;
             @Jump.canceled -= instance.OnJump;
+            @Beep.started -= instance.OnBeep;
+            @Beep.performed -= instance.OnBeep;
+            @Beep.canceled -= instance.OnBeep;
+            @CarDirectional.started -= instance.OnCarDirectional;
+            @CarDirectional.performed -= instance.OnCarDirectional;
+            @CarDirectional.canceled -= instance.OnCarDirectional;
         }
 
         public void RemoveCallbacks(IBaseDrivingActions instance)
@@ -567,7 +669,7 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
     public interface IBaseDrivingActions
     {
         void OnBoost(InputAction.CallbackContext context);
-        void OnHandbreak(InputAction.CallbackContext context);
+        void OnDrift(InputAction.CallbackContext context);
         void OnAccelerate(InputAction.CallbackContext context);
         void OnDecelerate(InputAction.CallbackContext context);
         void OnSteer(InputAction.CallbackContext context);
@@ -576,5 +678,7 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
         void OnTwistRotation(InputAction.CallbackContext context);
         void OnFlipRotation(InputAction.CallbackContext context);
         void OnJump(InputAction.CallbackContext context);
+        void OnBeep(InputAction.CallbackContext context);
+        void OnCarDirectional(InputAction.CallbackContext context);
     }
 }

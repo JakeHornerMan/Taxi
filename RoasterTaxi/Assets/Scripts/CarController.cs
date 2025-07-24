@@ -47,6 +47,8 @@ public class CarController : MonoBehaviour
     [Tooltip("GRIP: Force applied reduce slide (increase this to make the car have more grip)")]
     [SerializeField] private float dragCoefficient = 1f;
     [SerializeField] private float failedRayLength = 1.5f;
+    [SerializeField] private float failedRayLengthHoodBoot = 0.5f;
+    [HideInInspector] public bool isSteeringLeft = true;
 
     [Header("Air-Bourne Settings")]
     [HideInInspector] public bool isJumping = false;
@@ -64,7 +66,7 @@ public class CarController : MonoBehaviour
     [SerializeField] private float maxBoostSpeed = 300f;
 
     [Header("Handbreak Settings")]
-    [HideInInspector] public bool isHandbreaking = false;
+    [HideInInspector] public bool isDriftBtnDown = false;
     [HideInInspector] public bool isBreaking = false;
     [HideInInspector] public bool isDrifting = false;
     [HideInInspector] public bool isDriftingLeft = false;
@@ -102,6 +104,8 @@ public class CarController : MonoBehaviour
 
     void FixedUpdate() {
         Debug.DrawRay(transform.position, transform.up * failedRayLength, Color.blue);
+        Debug.DrawRay(new Vector3(transform.position.x, transform.position.y, transform.position.z + 2f), transform.up * failedRayLengthHoodBoot, Color.blue);
+        Debug.DrawRay(new Vector3(transform.position.x, transform.position.y, transform.position.z - 2f), transform.up * failedRayLengthHoodBoot, Color.blue);
         Suspension();
         GroundCheck();
         if (!isGrounded && !isFailedLanding) FailedLandCheck();
@@ -123,8 +127,17 @@ public class CarController : MonoBehaviour
         moveInput = ans;
     }
 
-    public void IsSteering(float ans) {
+    public void IsSteering(float ans)
+    {
         steerInput = ans;
+        if (steerInput > 0.05f)
+        {
+            isSteeringLeft = false;
+        }
+        if (steerInput < -0.05f)
+        {
+            isSteeringLeft = true;
+        }
     }
 
     public void IsBoosting(bool ans)
@@ -144,18 +157,18 @@ public class CarController : MonoBehaviour
         }
     }
 
-    public void IsHandbreaking(bool ans)
+    public void IsDrifting(bool ans)
     {
         if (ans)
         {
             isBoosting = false;
-            isHandbreaking = true;
+            isDriftBtnDown = true;
             carSounds.PlayHandbrakeSound();
 
         }
         else
         {
-            isHandbreaking = false;
+            isDriftBtnDown = false;
             carSounds.PlayHandbrakeSound();
         }
     }
@@ -169,13 +182,33 @@ public class CarController : MonoBehaviour
     {
         Jump();
         Debug.Log("Jumping!");
+    }
+
+    public void IsBeeping()
+    {
         carSounds.PlayCarHorn();
     }
 
+    public void IsBreaking()
+    { 
+        isBreaking = true;
+    }
+
+    public void IsFlickForeward(bool ans)
+    { 
+        Debug.Log("Flicking Foreward!");
+    }
+
+     public void IsFlickBackward(bool ans)
+    { 
+        Debug.Log("Flicking Backward!");
+    }
+    
+
     #endregion
 
-#region Car Suspension and Ground Check
-    
+    #region Car Suspension and Ground Check
+
 
     private void Suspension()
     {
@@ -232,7 +265,6 @@ public class CarController : MonoBehaviour
             tempGroundedWheels += wheelIsGrounded[i];
         }
 
-        //I had this set to 3 for a while it fixed the car from flipping over but it was not realistic.
         if (tempGroundedWheels >= 3)
         {
             if (!isGrounded) {
@@ -264,28 +296,39 @@ public class CarController : MonoBehaviour
     {
         currentCarLocalVelocity = transform.InverseTransformDirection(carRB.velocity);
         carVelocityRatio = currentCarLocalVelocity.z / maxSpeed;
-        Debug.Log("carVelocityRatio: " + carVelocityRatio);
+        // Debug.Log("carVelocityRatio: " + carVelocityRatio);
     }
 
     private void Movement()
     {
         if (isGrounded)
         {
-            if (isHandbreaking && driftReset)
+            
+            if (isBreaking)
             {
-                if (steerInput > 0f || steerInput < 0f || isDrifting)
+                HandBrake();
+                isBreaking = false;
+                return;
+            }
+
+            if (carVelocityRatio > 0.05f || isDrifting)
+            {
+                if (isDriftBtnDown && driftReset)
                 {
                     Drifting();
                     return;
                 }
-                else
-                {
-                    HandBrake();
-                    return;
-                }
             }
 
-            if (isDrifting && !isHandbreaking)
+            // TODO: yet another boolean structure isFailedDrift that will on be set back to false when the button has been released
+            // if (carVelocityRatio < 0.05f || isDriftBtnDown) 
+            // {
+            //     isFailedDrift = true;
+            //     isDriftBtnDown = false;
+            //     FailedDrift();
+            // }
+
+            if (isDrifting && !isDriftBtnDown)
             {
                 EndDrifting();
             }
@@ -360,7 +403,7 @@ public class CarController : MonoBehaviour
 
         float time = 0f;
 
-        while (time < duration && isHandbreaking)
+        while (time < duration && isDriftBtnDown)
         {
             float t = time / duration;
 
@@ -467,12 +510,12 @@ public class CarController : MonoBehaviour
 
     private void Drifting()
     {
-        if (isHandbreaking)
+        if (isDriftBtnDown)
         {
             if (!isDrifting)
             {
                 Debug.Log("Drifting Start!");
-                isDriftingLeft = steerInput > 0 ? false : true;
+                isDriftingLeft = isSteeringLeft;
                 isDrifting = true;
                 bounceRoutine = StartCoroutine(AnimateCarBodyBounce(0.2f, 0.2f));
                 DriftRotation();
@@ -528,7 +571,7 @@ public class CarController : MonoBehaviour
     private void EndDrifting()
     {
 
-        if (isDrifting && !isHandbreaking && driftReset) //we need to reset the drift state so the player has time between drifts
+        if (isDrifting && !isDriftBtnDown && driftReset) //we need to reset the drift state so the player has time between drifts
         {
             driftReset = false; // Reset drift state
             Debug.Log("Drifting End!");
@@ -598,6 +641,13 @@ public class CarController : MonoBehaviour
             }
         }
     }
+
+    private void FailedDrift()
+    {
+        if (bounceRoutine == null) bounceRoutine = StartCoroutine(AnimateCarBodyBounce(0.2f, 0.2f));
+        carSounds.PlayFailedDriftSound();
+    }
+
     #endregion
 
     #region Car Visuals
@@ -700,6 +750,18 @@ public class CarController : MonoBehaviour
     {
         RaycastHit hit;
         if (Physics.Raycast(transform.position, transform.up, out hit, failedRayLength, drivable))
+        {
+            Debug.Log("YOU FAILED THE LANDING!");
+            isFailedLanding = true;
+            ResetCar();
+        }
+        if (Physics.Raycast(new Vector3(transform.position.x, transform.position.y, transform.position.z+2f), transform.up, out hit, failedRayLengthHoodBoot, drivable))
+        {
+            Debug.Log("YOU FAILED THE LANDING!");
+            isFailedLanding = true;
+            ResetCar();
+        }
+         if (Physics.Raycast(new Vector3(transform.position.x, transform.position.y, transform.position.z+2f), transform.up, out hit, failedRayLengthHoodBoot, drivable))
         {
             Debug.Log("YOU FAILED THE LANDING!");
             isFailedLanding = true;

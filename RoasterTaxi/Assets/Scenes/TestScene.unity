@@ -341,7 +341,7 @@ GameObject:
   - component: {fileID: 334011585}
   m_Layer: 6
   m_Name: wall
-  m_TagString: Ramp
+  m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -39966,6 +39966,8 @@ MonoBehaviour:
     m_RotationOrder: 4
   dragCoefficient: 3
   failedRayLength: 0.75
+  failedRayLengthHoodBoot: 0.5
+  isSteeringLeft: 1
   isJumping: 0
   jumpMulti: 1.2
   airFloat: 1.2
@@ -39973,10 +39975,11 @@ MonoBehaviour:
   isBoosting: 0
   boostMultiplier: 1.5
   maxBoostSpeed: 1000
-  isHandbreaking: 0
+  isDriftBtnDown: 0
   isBreaking: 0
   isDrifting: 0
   isDriftingLeft: 0
+  driftReset: 1
   driftHandling: 1.2
   wheelIsGrounded: 00000000000000000000000000000000
   isGrounded: 0
@@ -40537,6 +40540,9 @@ MonoBehaviour:
   carHornSound:
     clip: {fileID: 8300000, guid: 67aec07aa64bbcb478e43cdeceb83f85, type: 3}
     volume: 1
+  failedDriftSound:
+    clip: {fileID: 8300000, guid: a8f339bfece0bee4f81b3b15d3a7b8f1, type: 3}
+    volume: 1
   minPitch: 0.4
   maxPitch: 5
 --- !u!114 &4529308773593598978
@@ -40629,6 +40635,14 @@ MonoBehaviour:
       m_Calls: []
     m_ActionId: ac8400e2-55db-46c4-8499-761189d86c24
     m_ActionName: BaseDriving/Jump[/Keyboard/space,/XInputControllerWindows/buttonSouth]
+  - m_PersistentCalls:
+      m_Calls: []
+    m_ActionId: 5dffad67-fdb5-4588-ac2a-2adb52ce8f4a
+    m_ActionName: BaseDriving/Beep[/Keyboard/enter,/XInputControllerWindows/leftStickPress]
+  - m_PersistentCalls:
+      m_Calls: []
+    m_ActionId: 583655da-e826-4dd1-a7de-bbabf95f7359
+    m_ActionName: BaseDriving/CarDirectional[/XInputControllerWindows/leftStick/y,/Keyboard/w,/Keyboard/s]
   m_NeverAutoSwitchControlSchemes: 0
   m_DefaultControlScheme: 
   m_DefaultActionMap: BaseDriving
