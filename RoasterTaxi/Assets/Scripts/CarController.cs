@@ -61,6 +61,8 @@ public class CarController : MonoBehaviour
     [SerializeField] private float airTravel = 0.2f;
 
     [Header("Boost Settings")]
+    [SerializeField] private float boostMaxAmount = 5f;
+    [HideInInspector] private float boostCounter;
     [HideInInspector] public bool isBoosting = false;
     [SerializeField] private float boostMultiplier = 1.5f;
     [SerializeField] private float maxBoostSpeed = 300f;
@@ -89,7 +91,7 @@ public class CarController : MonoBehaviour
     [SerializeField] private float maxSteeringAngle = 30f;
     [SerializeField] private float minSideSkidVelocity = 10f;
 
-#region Update and Initialization
+    #region Update and Initialization
 
     void Awake()
     {
@@ -100,6 +102,12 @@ public class CarController : MonoBehaviour
         if (carRB == null) Debug.LogError("Rigidbody not found on the car object.");
 
         carBodyStartPosition = carVisuals[1].transform.localPosition; //record of wherre the car body starts for animations
+    }
+
+    void Start()
+    {
+        boostCounter = boostMaxAmount;
+        EventManager.uiEvents.OnBoostChange.Invoke(this, boostCounter);
     }
 
     void FixedUpdate() {
@@ -424,13 +432,18 @@ public class CarController : MonoBehaviour
 
     private void Boost()
     {
+        if (boostCounter <= 0) return;
+
         currentSpeed = Vector3.Dot(carRB.velocity, transform.forward);
-        if (currentSpeed < maxBoostSpeed) {
+        if (currentSpeed < maxBoostSpeed)
+        {
             if (isGrounded)
             {
                 carRB.AddForceAtPosition(acceleration * boostMultiplier * transform.forward, accelerationPoint.position, ForceMode.Acceleration);
             }
         }
+        boostCounter -=1f;
+        EventManager.uiEvents.OnBoostChange.Invoke(this, boostCounter);
     }
     #endregion
 
