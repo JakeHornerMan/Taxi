@@ -66,6 +66,8 @@ public class CarController : MonoBehaviour
     [HideInInspector] public bool isBoosting = false;
     [SerializeField] private float boostMultiplier = 1.5f;
     [SerializeField] private float maxBoostSpeed = 300f;
+    [SerializeField] private float maxBoostTime = 5f;
+
 
     [Header("Handbreak Settings")]
     [HideInInspector] public bool isDriftBtnDown = false;
@@ -150,19 +152,26 @@ public class CarController : MonoBehaviour
 
     public void IsBoosting(bool ans)
     {
-        if (ans)
+        if (isDrifting || boostCounter <= 0) return;
+
+
+
+        if (ans && isBoosting == false)
         {
             Debug.Log(" Boosting! ");
-            // CameraChangeFollowBoost();
             isBoosting = true;
+            boostCounter -= 1f;
+            EventManager.uiEvents.OnBoostChange.Invoke(this, boostCounter);
+            boostTimeRoutine = StartCoroutine(ResetBoostTime(maxBoostTime));
             carSounds.PlayBoostSound();
+            Boost(true, 5f);
         }
-        else
-        {
-            Debug.Log(" Not Boosting! ");
-            // CameraChangeFollowOffsetReturn();
-            isBoosting = false;
-        }
+        // else
+        // {
+        //     Debug.Log(" Not Boosting! ");
+        //     // CameraChangeFollowOffsetReturn();
+        //     isBoosting = false;
+        // }
     }
 
     public void IsDrifting(bool ans)
@@ -429,21 +438,43 @@ public class CarController : MonoBehaviour
 
         handBrakeRoutine = null;
     }
+    
+    #endregion
 
-    private void Boost()
+    #region Boost Logic
+
+    private void Boost(bool startBoost = false, float startMulti = 5f)
     {
-        if (boostCounter <= 0) return;
-
         currentSpeed = Vector3.Dot(carRB.velocity, transform.forward);
         if (currentSpeed < maxBoostSpeed)
         {
             if (isGrounded)
             {
-                carRB.AddForceAtPosition(acceleration * boostMultiplier * transform.forward, accelerationPoint.position, ForceMode.Acceleration);
+                if (startBoost)
+                {
+                    carRB.AddForceAtPosition(acceleration * startMulti * transform.forward, accelerationPoint.position, ForceMode.Acceleration);
+                }
+                else
+                { 
+                    carRB.AddForceAtPosition(acceleration * boostMultiplier * transform.forward, accelerationPoint.position, ForceMode.Acceleration);
+                }
             }
         }
-        boostCounter -=1f;
-        EventManager.uiEvents.OnBoostChange.Invoke(this, boostCounter);
+    }
+
+    private Coroutine boostTimeRoutine;
+    private IEnumerator ResetBoostTime(float duration)
+    {
+        float time = 0f;
+
+        while (time < duration && isDrifting == false)
+        {
+            float t = time / duration;
+            time += Time.deltaTime;
+            yield return null;
+        }
+        isBoosting = false;
+        boostTimeRoutine = null;
     }
     #endregion
 
