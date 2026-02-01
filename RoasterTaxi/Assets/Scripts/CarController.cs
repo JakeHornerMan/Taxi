@@ -152,13 +152,13 @@ public class CarController : MonoBehaviour
 
     public void IsBoosting(bool ans)
     {
-        if (isDrifting || boostCounter <= 0) return;
+        // if (isDrifting || boostCounter <= 0) return;
 
 
 
-        if (ans && isBoosting == false)
+        if (ans )//isBoosting == false)
         {
-            Debug.Log(" Boosting! ");
+            // Debug.Log(" Boosting! ");
             isBoosting = true;
             boostCounter -= 1f;
             EventManager.uiEvents.OnBoostChange.Invoke(this, boostCounter);
@@ -166,12 +166,12 @@ public class CarController : MonoBehaviour
             carSounds.PlayBoostSound();
             Boost(true, 5f);
         }
-        // else
-        // {
-        //     Debug.Log(" Not Boosting! ");
-        //     // CameraChangeFollowOffsetReturn();
-        //     isBoosting = false;
-        // }
+        else
+        {
+            Debug.Log(" Not Boosting! ");
+            // CameraChangeFollowOffsetReturn();
+            isBoosting = false;
+        }
     }
 
     public void IsDrifting(bool ans)
